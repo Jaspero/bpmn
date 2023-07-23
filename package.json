@@ -1,7 +1,7 @@
 {
   "name": "@jaspero/bpmn",
   "description": "A BPMN UI published as a web component",
-  "version": "0.0.0",
+  "version": "0.0.0-development",
   "type": "module",
   "main": "dist/lib/@jaspero/bpmn.js",
   "scripts": {
@@ -14,7 +14,8 @@
     "preview": "vite preview --config vite.demo.config.ts",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "prepublishOnly": "npm run build -s",
-    "format": "prettier --plugin-search-dir . --write ."
+    "format": "prettier --plugin-search-dir . --write .",
+    "semantic-release": "semantic-release"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "2.4.2",
@@ -31,9 +32,15 @@
     "tslib": "2.6.0",
     "typescript": "5.1.6",
     "vite": "4.4.6",
-    "vite-plugin-static-copy": "0.17.0"
+    "vite-plugin-static-copy": "0.17.0",
+    "semantic-release": "21.0.7"
   },
+  "license": "MIT",
   "files": [
     "dist/lib"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Jaspero/bpmn.git"
+  }
 }
