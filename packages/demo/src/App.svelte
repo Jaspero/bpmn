@@ -7,8 +7,8 @@
   let el: HTMLDivElement;
 
   onMount(() => {
-    // const instanceEl = document.createElement('jp-bpmn-overview');
-    const instanceEl = document.createElement('jp-bpmn-single');
+    const instanceEl = document.createElement('jp-bpmn-overview');
+    // const instanceEl = document.createElement('jp-bpmn-single');
 
     // @ts-ignore
     instanceEl.service = new MockBPMNService();
