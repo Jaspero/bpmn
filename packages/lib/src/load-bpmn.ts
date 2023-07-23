@@ -3,7 +3,7 @@ let loaded = false;
 function loadScript(url: string) {
 	return new Promise(resolve => {
 		const scriptEl = document.createElement('script');
-		
+
 		scriptEl.src = url;
 		scriptEl.onload = resolve;
 
@@ -30,12 +30,10 @@ export async function loadBpmn() {
 	}
 
 	await loadCss(`https://unpkg.com/bpmn-js@13.2.2/dist/assets/bpmn-js.css`);
-	console.log(123);
 	await loadCss(`https://unpkg.com/bpmn-js@13.2.2/dist/assets/diagram-js.css`);
 	await loadCss(`https://unpkg.com/bpmn-js@13.2.2/dist/assets/bpmn-font/css/bpmn.css`);
 
 	await loadScript(`https://unpkg.com/bpmn-js@13.2.2/dist/bpmn-modeler.development.js`);
-	console.log(45);
 
 	loaded = true;
 }

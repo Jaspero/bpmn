@@ -33,16 +33,12 @@
   }
 
   onMount(async () => {
-    console.log(22222);
     await loadBpmn();
 
     [instance, versionInstance] = await Promise.all([
       service.get(id),
       service.getVersion(id, version)
     ]);
-
-    // @ts-ignore
-    console.log(22, BpmnJS);
 
     // @ts-ignore
     modeler = new BpmnJS({
