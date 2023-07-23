@@ -1,5 +1,6 @@
 export default () => {
   import('./src/overview.wc.svelte');
+  import('./src/single.wc.svelte');
 
   /**
    * Types

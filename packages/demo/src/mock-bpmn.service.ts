@@ -12,257 +12,152 @@ const mockVersion = [
 		id: Date.now().toString(),
 		version: 1,
 		xml: `<?xml version="1.0" encoding="UTF-8"?>
-		<definitions xmlns="https://www.omg.org/spec/BPMN/20191111/MODEL/" xmlns:BPMNdi="https://www.omg.org/spec/BPMN/20191111/BPMNDI/" xmlns:dc="http://www.omg.org/spec/BPMN/20180521/DC/" xmlns:di="http://www.omg.org/spec/BPMN/20180521/DI/" id="dish" name="Dish" namespace="http://camunda.org/schema/1.0/BPMN">
-			<inputData id="dayType_id" name="Type of day">
-				<variable id="dayType_ii" name="Type of day" typeRef="string" />
-			</inputData>
-			<inputData id="temperature_id" name="Weather in Celsius">
-				<variable id="temperature_ii" name="Weather in Celsius" typeRef="integer" />
-			</inputData>
-			<knowledgeSource id="host_ks" name="Host" />
-			<knowledgeSource id="guest_ks" name="Guest Type">
-				<authorityRequirement id="AuthorityRequirement_0hyfuzo">
-					<requiredDecision href="#guestCount" />
-				</authorityRequirement>
-			</knowledgeSource>
-			<businessKnowledgeModel id="elMenu" name="El menú" />
-			<decision id="dish-decision" name="Dish Decision">
-				<informationRequirement id="InformationRequirement_05tgz9d">
-					<requiredDecision href="#guestCount" />
-				</informationRequirement>
-				<informationRequirement id="InformationRequirement_1r8doop">
-					<requiredDecision href="#season" />
-				</informationRequirement>
-				<authorityRequirement id="AuthorityRequirement_1sk6rin">
-					<requiredAuthority href="#host_ks" />
-				</authorityRequirement>
-				<decisionTable id="dishDecisionTable">
-					<input id="seasonInput" label="Season">
-						<inputExpression id="seasonInputExpression" typeRef="string">
-							<text>season</text>
-						</inputExpression>
-					</input>
-					<input id="guestCountInput" label="How many guests">
-						<inputExpression id="guestCountInputExpression" typeRef="integer">
-							<text>guestCount</text>
-						</inputExpression>
-					</input>
-					<output id="output1" label="Dish" name="desiredDish" typeRef="string" />
-					<rule id="row-495762709-1">
-						<inputEntry id="UnaryTests_1nxcsjr">
-							<text>"Winter"</text>
-						</inputEntry>
-						<inputEntry id="UnaryTests_1r9yorj">
-							<text>&lt;= 8</text>
-						</inputEntry>
-						<outputEntry id="LiteralExpression_1mtwzqz">
-							<text>"Spareribs"</text>
-						</outputEntry>
-					</rule>
-					<rule id="row-495762709-2">
-						<inputEntry id="UnaryTests_1lxjbif">
-							<text>"Winter"</text>
-						</inputEntry>
-						<inputEntry id="UnaryTests_0nhiedb">
-							<text>&gt; 8</text>
-						</inputEntry>
-						<outputEntry id="LiteralExpression_1h30r12">
-							<text>"Pasta"</text>
-						</outputEntry>
-					</rule>
-					<rule id="row-495762709-3">
-						<inputEntry id="UnaryTests_0ifgmfm">
-							<text>"Summer"</text>
-						</inputEntry>
-						<inputEntry id="UnaryTests_12cib9m">
-							<text>&gt; 10</text>
-						</inputEntry>
-						<outputEntry id="LiteralExpression_0wgaegy">
-							<text>"Light salad"</text>
-						</outputEntry>
-					</rule>
-					<rule id="row-495762709-7">
-						<inputEntry id="UnaryTests_0ozm9s7">
-							<text>"Summer"</text>
-						</inputEntry>
-						<inputEntry id="UnaryTests_0sesgov">
-							<text>&lt;= 10</text>
-						</inputEntry>
-						<outputEntry id="LiteralExpression_1dvc5x3">
-							<text>"Beans salad"</text>
-						</outputEntry>
-					</rule>
-					<rule id="row-445981423-3">
-						<inputEntry id="UnaryTests_1er0je1">
-							<text>"Spring"</text>
-						</inputEntry>
-						<inputEntry id="UnaryTests_1uzqner">
-							<text>&lt; 10</text>
-						</inputEntry>
-						<outputEntry id="LiteralExpression_1pxy4g1">
-							<text>"Stew"</text>
-						</outputEntry>
-					</rule>
-					<rule id="row-445981423-4">
-						<inputEntry id="UnaryTests_06or48g">
-							<text>"Spring"</text>
-						</inputEntry>
-						<inputEntry id="UnaryTests_0wa71sy">
-							<text>&gt;= 10</text>
-						</inputEntry>
-						<outputEntry id="LiteralExpression_09ggol9">
-							<text>"Steak"</text>
-						</outputEntry>
-					</rule>
-				</decisionTable>
-			</decision>
-			<decision id="season" name="Season decision">
-				<informationRequirement id="InformationRequirement_1vzoh7s">
-					<requiredInput href="#temperature_id" />
-				</informationRequirement>
-				<decisionTable id="seasonDecisionTable">
-					<input id="temperatureInput" label="Weather in Celsius">
-						<inputExpression id="temperatureInputExpression" typeRef="integer">
-							<text>temperature</text>
-						</inputExpression>
-					</input>
-					<output id="seasonOutput" label="season" name="season" typeRef="string" />
-					<rule id="row-495762709-5">
-						<inputEntry id="UnaryTests_1fd0eqo">
-							<text>&gt;30</text>
-						</inputEntry>
-						<outputEntry id="LiteralExpression_0l98klb">
-							<text>"Summer"</text>
-						</outputEntry>
-					</rule>
-					<rule id="row-495762709-6">
-						<inputEntry id="UnaryTests_1nz6at2">
-							<text>&lt;10</text>
-						</inputEntry>
-						<outputEntry id="LiteralExpression_08moy1k">
-							<text>"Winter"</text>
-						</outputEntry>
-					</rule>
-					<rule id="row-445981423-2">
-						<inputEntry id="UnaryTests_1a0imxy">
-							<text>[10..30]</text>
-						</inputEntry>
-						<outputEntry id="LiteralExpression_1poftw4">
-							<text>"Spring"</text>
-						</outputEntry>
-					</rule>
-				</decisionTable>
-			</decision>
-			<decision id="guestCount" name="Guest Count">
-				<informationRequirement id="InformationRequirement_038230q">
-					<requiredInput href="#dayType_id" />
-				</informationRequirement>
-				<knowledgeRequirement id="KnowledgeRequirement_0cql475">
-					<requiredKnowledge href="#elMenu" />
-				</knowledgeRequirement>
-				<decisionTable id="guestCountDecisionTable">
-					<input id="typeOfDayInput" label="Type of day">
-						<inputExpression id="typeOfDayInputExpression" typeRef="string">
-							<text>dayType</text>
-						</inputExpression>
-					</input>
-					<output id="guestCountOutput" label="Guest count" name="guestCount" typeRef="integer" />
-					<rule id="row-495762709-8">
-						<inputEntry id="UnaryTests_0l72u8n">
-							<text>"Weekday"</text>
-						</inputEntry>
-						<outputEntry id="LiteralExpression_0wuwqaz">
-							<text>4</text>
-						</outputEntry>
-					</rule>
-					<rule id="row-495762709-9">
-						<inputEntry id="UnaryTests_03a73o9">
-							<text>"Holiday"</text>
-						</inputEntry>
-						<outputEntry id="LiteralExpression_1whn119">
-							<text>10</text>
-						</outputEntry>
-					</rule>
-					<rule id="row-495762709-10">
-						<inputEntry id="UnaryTests_12tygwt">
-							<text>"Weekend"</text>
-						</inputEntry>
-						<outputEntry id="LiteralExpression_1b5k9t8">
-							<text>15</text>
-						</outputEntry>
-					</rule>
-				</decisionTable>
-			</decision>
-			<textAnnotation id="TextAnnotation_1">
-				<text>Week day or week end</text>
-			</textAnnotation>
-			<association id="Association_18hoj4i">
-				<sourceRef href="#dayType_id" />
-				<targetRef href="#TextAnnotation_1" />
-			</association>
-			<BPMNdi:BPMNDI>
-				<BPMNdi:BPMNDiagram id="BPMNDiagram_1ejukud">
-					<BPMNdi:BPMNShape id="BPMNShape_1pny77l" BPMNElementRef="dayType_id">
-						<dc:Bounds height="45" width="125" x="303" y="363" />
-					</BPMNdi:BPMNShape>
-					<BPMNdi:BPMNShape id="BPMNShape_1b88mi9" BPMNElementRef="temperature_id">
-						<dc:Bounds height="45" width="125" x="105" y="316" />
-					</BPMNdi:BPMNShape>
-					<BPMNdi:BPMNShape id="BPMNShape_0w9hu9e" BPMNElementRef="host_ks">
-						<dc:Bounds height="63" width="100" x="595" y="56" />
-					</BPMNdi:BPMNShape>
-					<BPMNdi:BPMNShape id="BPMNShape_0159egh" BPMNElementRef="guest_ks">
-						<dc:Bounds height="63" width="100" x="587" y="194" />
-					</BPMNdi:BPMNShape>
-					<BPMNdi:BPMNEdge id="BPMNEdge_1gafs9m" BPMNElementRef="AuthorityRequirement_0hyfuzo">
-						<di:waypoint x="510" y="226" />
-						<di:waypoint x="587" y="226" />
-					</BPMNdi:BPMNEdge>
-					<BPMNdi:BPMNShape id="BPMNShape_0j9biml" BPMNElementRef="elMenu">
-						<dc:Bounds height="46" width="135" x="542" y="364" />
-					</BPMNdi:BPMNShape>
-					<BPMNdi:BPMNShape id="BPMNShape_1f9xq97" BPMNElementRef="dish-decision">
-						<dc:Bounds height="80" width="180" x="250" y="56" />
-					</BPMNdi:BPMNShape>
-					<BPMNdi:BPMNEdge id="BPMNEdge_0wk9owu" BPMNElementRef="InformationRequirement_05tgz9d">
-						<di:waypoint x="395" y="186" />
-						<di:waypoint x="365" y="136" />
-					</BPMNdi:BPMNEdge>
-					<BPMNdi:BPMNEdge id="BPMNEdge_0glygnk" BPMNElementRef="InformationRequirement_1r8doop">
-						<di:waypoint x="243" y="186" />
-						<di:waypoint x="297" y="136" />
-					</BPMNdi:BPMNEdge>
-					<BPMNdi:BPMNEdge id="BPMNEdge_1jf14ck" BPMNElementRef="AuthorityRequirement_1sk6rin">
-						<di:waypoint x="595" y="89" />
-						<di:waypoint x="430" y="94" />
-					</BPMNdi:BPMNEdge>
-					<BPMNdi:BPMNShape id="BPMNShape_1dlhv62" BPMNElementRef="season">
-						<dc:Bounds height="80" width="180" x="110" y="186" />
-					</BPMNdi:BPMNShape>
-					<BPMNdi:BPMNEdge id="BPMNEdge_01c572k" BPMNElementRef="InformationRequirement_1vzoh7s">
-						<di:waypoint x="180" y="316" />
-						<di:waypoint x="191" y="266" />
-					</BPMNdi:BPMNEdge>
-					<BPMNdi:BPMNShape id="BPMNShape_0tndkvg" BPMNElementRef="guestCount">
-						<dc:Bounds height="80" width="180" x="330" y="186" />
-					</BPMNdi:BPMNShape>
-					<BPMNdi:BPMNEdge id="BPMNEdge_0wrc9rz" BPMNElementRef="KnowledgeRequirement_0cql475">
-						<di:waypoint x="591" y="364" />
-						<di:waypoint x="510" y="265" />
-					</BPMNdi:BPMNEdge>
-					<BPMNdi:BPMNEdge id="BPMNEdge_0m045nr" BPMNElementRef="InformationRequirement_038230q">
-						<di:waypoint x="369" y="363" />
-						<di:waypoint x="405" y="266" />
-					</BPMNdi:BPMNEdge>
-					<BPMNdi:BPMNShape id="BPMNShape_1izzhzd" BPMNElementRef="TextAnnotation_1">
-						<dc:Bounds height="45" width="125" x="273" y="466" />
-					</BPMNdi:BPMNShape>
-					<BPMNdi:BPMNEdge id="BPMNEdge_1mkr3rl" BPMNElementRef="Association_18hoj4i">
-						<di:waypoint x="366" y="408" />
-						<di:waypoint x="336" y="466" />
-					</BPMNdi:BPMNEdge>
-				</BPMNdi:BPMNDiagram>
-			</BPMNdi:BPMNDI>
+		<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
+			<collaboration id="sid-c0e745ff-361e-4afb-8c8d-2a1fc32b1424">
+				<participant id="sid-87F4C1D6-25E1-4A45-9DA7-AD945993D06F" name="Customer" processRef="sid-C3803939-0872-457F-8336-EAE484DC4A04" />
+			</collaboration>
+			<process id="sid-C3803939-0872-457F-8336-EAE484DC4A04" name="Customer" processType="None" isClosed="false" isExecutable="false">
+				<extensionElements />
+				<laneSet id="sid-b167d0d7-e761-4636-9200-76b7f0e8e83a">
+					<lane id="sid-57E4FE0D-18E4-478D-BC5D-B15164E93254">
+						<flowNodeRef>sid-52EB1772-F36E-433E-8F5B-D5DFD26E6F26</flowNodeRef>
+						<flowNodeRef>sid-E49425CF-8287-4798-B622-D2A7D78EF00B</flowNodeRef>
+						<flowNodeRef>sid-D7F237E8-56D0-4283-A3CE-4F0EFE446138</flowNodeRef>
+						<flowNodeRef>sid-E433566C-2289-4BEB-A19C-1697048900D2</flowNodeRef>
+						<flowNodeRef>sid-5134932A-1863-4FFA-BB3C-A4B4078B11A9</flowNodeRef>
+						<flowNodeRef>SCAN_OK</flowNodeRef>
+					</lane>
+				</laneSet>
+				<task id="sid-52EB1772-F36E-433E-8F5B-D5DFD26E6F26" name="Scan QR code">
+					<incoming>sid-4DC479E5-5C20-4948-BCFC-9EC5E2F66D8D</incoming>
+					<outgoing>sid-EE8A7BA0-5D66-4F8B-80E3-CC2751B3856A</outgoing>
+				</task>
+				<task id="sid-E49425CF-8287-4798-B622-D2A7D78EF00B" name="Open product information in mobile  app">
+					<incoming>sid-8B820AF5-DC5C-4618-B854-E08B71FB55CB</incoming>
+					<outgoing>sid-57EB1F24-BD94-479A-BF1F-57F1EAA19C6C</outgoing>
+				</task>
+				<startEvent id="sid-D7F237E8-56D0-4283-A3CE-4F0EFE446138" name="Notices&#10;QR code">
+					<outgoing>sid-7B791A11-2F2E-4D80-AFB3-91A02CF2B4FD</outgoing>
+				</startEvent>
+				<endEvent id="sid-E433566C-2289-4BEB-A19C-1697048900D2" name="Is informed">
+					<incoming>sid-57EB1F24-BD94-479A-BF1F-57F1EAA19C6C</incoming>
+				</endEvent>
+				<exclusiveGateway id="sid-5134932A-1863-4FFA-BB3C-A4B4078B11A9">
+					<incoming>sid-7B791A11-2F2E-4D80-AFB3-91A02CF2B4FD</incoming>
+					<incoming>sid-337A23B9-A923-4CCE-B613-3E247B773CCE</incoming>
+					<outgoing>sid-4DC479E5-5C20-4948-BCFC-9EC5E2F66D8D</outgoing>
+				</exclusiveGateway>
+				<exclusiveGateway id="SCAN_OK" name="Scan successful?&#10;">
+					<incoming>sid-EE8A7BA0-5D66-4F8B-80E3-CC2751B3856A</incoming>
+					<outgoing>sid-8B820AF5-DC5C-4618-B854-E08B71FB55CB</outgoing>
+					<outgoing>sid-337A23B9-A923-4CCE-B613-3E247B773CCE</outgoing>
+				</exclusiveGateway>
+				<sequenceFlow id="sid-337A23B9-A923-4CCE-B613-3E247B773CCE" name="Yes" sourceRef="SCAN_OK" targetRef="sid-5134932A-1863-4FFA-BB3C-A4B4078B11A9" />
+				<sequenceFlow id="sid-4DC479E5-5C20-4948-BCFC-9EC5E2F66D8D" sourceRef="sid-5134932A-1863-4FFA-BB3C-A4B4078B11A9" targetRef="sid-52EB1772-F36E-433E-8F5B-D5DFD26E6F26" />
+				<sequenceFlow id="sid-8B820AF5-DC5C-4618-B854-E08B71FB55CB" name="No" sourceRef="SCAN_OK" targetRef="sid-E49425CF-8287-4798-B622-D2A7D78EF00B" />
+				<sequenceFlow id="sid-57EB1F24-BD94-479A-BF1F-57F1EAA19C6C" sourceRef="sid-E49425CF-8287-4798-B622-D2A7D78EF00B" targetRef="sid-E433566C-2289-4BEB-A19C-1697048900D2" />
+				<sequenceFlow id="sid-EE8A7BA0-5D66-4F8B-80E3-CC2751B3856A" sourceRef="sid-52EB1772-F36E-433E-8F5B-D5DFD26E6F26" targetRef="SCAN_OK" />
+				<sequenceFlow id="sid-7B791A11-2F2E-4D80-AFB3-91A02CF2B4FD" sourceRef="sid-D7F237E8-56D0-4283-A3CE-4F0EFE446138" targetRef="sid-5134932A-1863-4FFA-BB3C-A4B4078B11A9" />
+			</process>
+			<bpmndi:BPMNDiagram id="sid-74620812-92c4-44e5-949c-aa47393d3830">
+				<bpmndi:BPMNPlane id="sid-cdcae759-2af7-4a6d-bd02-53f3352a731d" bpmnElement="sid-c0e745ff-361e-4afb-8c8d-2a1fc32b1424">
+					<bpmndi:BPMNShape id="sid-87F4C1D6-25E1-4A45-9DA7-AD945993D06F_gui" bpmnElement="sid-87F4C1D6-25E1-4A45-9DA7-AD945993D06F" isHorizontal="true">
+						<omgdc:Bounds x="83" y="105" width="933" height="250" />
+						<bpmndi:BPMNLabel labelStyle="sid-84cb49fd-2f7c-44fb-8950-83c3fa153d3b">
+							<omgdc:Bounds x="47.49999999999999" y="170.42857360839844" width="12.000000000000014" height="59.142852783203125" />
+						</bpmndi:BPMNLabel>
+					</bpmndi:BPMNShape>
+					<bpmndi:BPMNShape id="sid-57E4FE0D-18E4-478D-BC5D-B15164E93254_gui" bpmnElement="sid-57E4FE0D-18E4-478D-BC5D-B15164E93254" isHorizontal="true">
+						<omgdc:Bounds x="113" y="105" width="903" height="250" />
+					</bpmndi:BPMNShape>
+					<bpmndi:BPMNShape id="sid-52EB1772-F36E-433E-8F5B-D5DFD26E6F26_gui" bpmnElement="sid-52EB1772-F36E-433E-8F5B-D5DFD26E6F26">
+						<omgdc:Bounds x="393" y="170" width="100" height="80" />
+						<bpmndi:BPMNLabel labelStyle="sid-84cb49fd-2f7c-44fb-8950-83c3fa153d3b">
+							<omgdc:Bounds x="360.5" y="172" width="84" height="12" />
+						</bpmndi:BPMNLabel>
+					</bpmndi:BPMNShape>
+					<bpmndi:BPMNShape id="sid-E49425CF-8287-4798-B622-D2A7D78EF00B_gui" bpmnElement="sid-E49425CF-8287-4798-B622-D2A7D78EF00B">
+						<omgdc:Bounds x="728" y="170" width="100" height="80" />
+						<bpmndi:BPMNLabel labelStyle="sid-84cb49fd-2f7c-44fb-8950-83c3fa153d3b">
+							<omgdc:Bounds x="695.9285736083984" y="162" width="83.14285278320312" height="36" />
+						</bpmndi:BPMNLabel>
+					</bpmndi:BPMNShape>
+					<bpmndi:BPMNEdge id="sid-EE8A7BA0-5D66-4F8B-80E3-CC2751B3856A_gui" bpmnElement="sid-EE8A7BA0-5D66-4F8B-80E3-CC2751B3856A">
+						<omgdi:waypoint x="493" y="210" />
+						<omgdi:waypoint x="585" y="210" />
+						<bpmndi:BPMNLabel>
+							<omgdc:Bounds x="494" y="185" width="90" height="20" />
+						</bpmndi:BPMNLabel>
+					</bpmndi:BPMNEdge>
+					<bpmndi:BPMNEdge id="sid-8B820AF5-DC5C-4618-B854-E08B71FB55CB_gui" bpmnElement="sid-8B820AF5-DC5C-4618-B854-E08B71FB55CB">
+						<omgdi:waypoint x="635" y="210" />
+						<omgdi:waypoint x="728" y="210" />
+						<bpmndi:BPMNLabel labelStyle="sid-e0502d32-f8d1-41cf-9c4a-cbb49fecf581">
+							<omgdc:Bounds x="642" y="185" width="16" height="12" />
+						</bpmndi:BPMNLabel>
+					</bpmndi:BPMNEdge>
+					<bpmndi:BPMNEdge id="sid-7B791A11-2F2E-4D80-AFB3-91A02CF2B4FD_gui" bpmnElement="sid-7B791A11-2F2E-4D80-AFB3-91A02CF2B4FD">
+						<omgdi:waypoint x="223" y="210" />
+						<omgdi:waypoint x="275" y="210" />
+						<bpmndi:BPMNLabel>
+							<omgdc:Bounds x="204" y="185" width="90" height="20" />
+						</bpmndi:BPMNLabel>
+					</bpmndi:BPMNEdge>
+					<bpmndi:BPMNEdge id="sid-4DC479E5-5C20-4948-BCFC-9EC5E2F66D8D_gui" bpmnElement="sid-4DC479E5-5C20-4948-BCFC-9EC5E2F66D8D">
+						<omgdi:waypoint x="325" y="210" />
+						<omgdi:waypoint x="393" y="210" />
+						<bpmndi:BPMNLabel>
+							<omgdc:Bounds x="314" y="185" width="90" height="20" />
+						</bpmndi:BPMNLabel>
+					</bpmndi:BPMNEdge>
+					<bpmndi:BPMNEdge id="sid-57EB1F24-BD94-479A-BF1F-57F1EAA19C6C_gui" bpmnElement="sid-57EB1F24-BD94-479A-BF1F-57F1EAA19C6C">
+						<omgdi:waypoint x="828" y="210" />
+						<omgdi:waypoint x="901" y="210" />
+						<bpmndi:BPMNLabel>
+							<omgdc:Bounds x="820" y="185" width="90" height="20" />
+						</bpmndi:BPMNLabel>
+					</bpmndi:BPMNEdge>
+					<bpmndi:BPMNEdge id="sid-337A23B9-A923-4CCE-B613-3E247B773CCE_gui" bpmnElement="sid-337A23B9-A923-4CCE-B613-3E247B773CCE">
+						<omgdi:waypoint x="611" y="234" />
+						<omgdi:waypoint x="610.5" y="299" />
+						<omgdi:waypoint x="300.5" y="299" />
+						<omgdi:waypoint x="301" y="234" />
+						<bpmndi:BPMNLabel labelStyle="sid-e0502d32-f8d1-41cf-9c4a-cbb49fecf581">
+							<omgdc:Bounds x="585" y="236" width="21" height="12" />
+						</bpmndi:BPMNLabel>
+					</bpmndi:BPMNEdge>
+					<bpmndi:BPMNShape id="StartEvent_0l6sgn0_di" bpmnElement="sid-D7F237E8-56D0-4283-A3CE-4F0EFE446138">
+						<omgdc:Bounds x="187" y="192" width="36" height="36" />
+						<bpmndi:BPMNLabel>
+							<omgdc:Bounds x="182" y="229" width="46" height="24" />
+						</bpmndi:BPMNLabel>
+					</bpmndi:BPMNShape>
+					<bpmndi:BPMNShape id="EndEvent_0xwuvv5_di" bpmnElement="sid-E433566C-2289-4BEB-A19C-1697048900D2">
+						<omgdc:Bounds x="901" y="192" width="36" height="36" />
+						<bpmndi:BPMNLabel>
+							<omgdc:Bounds x="892" y="231" width="56" height="12" />
+						</bpmndi:BPMNLabel>
+					</bpmndi:BPMNShape>
+					<bpmndi:BPMNShape id="ExclusiveGateway_1g0eih2_di" bpmnElement="sid-5134932A-1863-4FFA-BB3C-A4B4078B11A9" isMarkerVisible="true">
+						<omgdc:Bounds x="275" y="185" width="50" height="50" />
+						<bpmndi:BPMNLabel>
+							<omgdc:Bounds x="210" y="160" width="90" height="12" />
+						</bpmndi:BPMNLabel>
+					</bpmndi:BPMNShape>
+					<bpmndi:BPMNShape id="ExclusiveGateway_0vci1x5_di" bpmnElement="SCAN_OK" isMarkerVisible="true">
+						<omgdc:Bounds x="585" y="185" width="50" height="50" />
+						<bpmndi:BPMNLabel>
+							<omgdc:Bounds x="568" y="157" width="88" height="24" />
+						</bpmndi:BPMNLabel>
+					</bpmndi:BPMNShape>
+				</bpmndi:BPMNPlane>
+				<bpmndi:BPMNLabelStyle id="sid-e0502d32-f8d1-41cf-9c4a-cbb49fecf581">
+					<omgdc:Font name="Arial" size="11" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" />
+				</bpmndi:BPMNLabelStyle>
+				<bpmndi:BPMNLabelStyle id="sid-84cb49fd-2f7c-44fb-8950-83c3fa153d3b">
+					<omgdc:Font name="Arial" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" />
+				</bpmndi:BPMNLabelStyle>
+			</bpmndi:BPMNDiagram>
 		</definitions>`
 	}
 ];

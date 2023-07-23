@@ -9,7 +9,7 @@
   import Button from './Button.svelte';
   import Dialog from './Dialog.svelte';
   import Search from './Search.svelte';
-  import { clickOutside } from './clickOutside';
+  import { clickOutside } from './click-outside';
   import type { BPMN } from './types/bpmn.interface';
   import type { BPMNService } from './types/bpmn.service';
 

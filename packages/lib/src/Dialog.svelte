@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { clickOutside } from './clickOutside';
+  import { clickOutside } from './click-outside';
 
   export let showing: boolean;
 </script>
