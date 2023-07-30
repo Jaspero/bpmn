@@ -42,5 +42,10 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Jaspero/bpmn.git"
+  },
+  "release": {
+    "branches": [
+      "main"
+    ]
   }
 }
