@@ -1,6 +1,7 @@
 import type {BPMNVersion} from '../../../dist/lib/types/BPMN-version.interface';
 import type {BPMN} from '../../../dist/lib/types/BPMN.interface';
 import type {BPMNService} from '../../../dist/lib/types/BPMN.service';
+import type {BPMNTrigger} from '../../../dist/lib/types/bpmn-trigger.interface';
 
 const mockItems = [
 	{id: Date.now().toString(), name: 'foo', version: 1, createdOn: Date.now(), lastUpdatedOn: Date.now()},
@@ -189,5 +190,25 @@ export class MockBPMNService implements BPMNService {
 	}
 	async deleteVersion(id: string, version: number): Promise<void> {
 		return;
+	}
+
+	async getTriggers(): Promise<BPMNTrigger[]> {
+		return [
+			{
+				id: 'document-created',
+				name: 'Document Created',
+				description: `Triggered when a new document is created.`
+			},
+			{
+				id: 'document-updated',
+				name: 'Document Updated',
+				description: `Triggered when a document is updated.`
+			},
+			{
+				id: 'document-deleted',
+				name: 'Document Deleted',
+				description: `Triggered when a document is deleted.`
+			}
+		];
 	}
 }

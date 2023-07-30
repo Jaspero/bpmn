@@ -5,4 +5,6 @@ export interface BPMN {
 	createdOn: number;
 	lastUpdatedOn: number;
 	description?: string;
+	trigger?: string;
+	triggerCondition?: string;
 }
