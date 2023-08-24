@@ -161,13 +161,6 @@
                 <input type="number" id="version" bind:value={versionInstance.version} readonly />
               </div>
             </div>
-
-            <div class="flex flex-col gap-2 mt-4">
-              <div class="flex flex-col gap-1">
-                <label for="versionId">Version ID</label>
-                <input id="versionId" bind:value={versionInstance.id} readonly />
-              </div>
-            </div>
           </details>
         </div>
       {/if}
