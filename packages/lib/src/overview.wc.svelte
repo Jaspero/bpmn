@@ -4,7 +4,7 @@
 }} />
 
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, createEventDispatcher } from 'svelte';
   import { fly } from 'svelte/transition';
   import Button from './Button.svelte';
   import Dialog from './Dialog.svelte';
@@ -15,6 +15,8 @@
 
   export let service: BPMNService;
   export let baseLink = '/bpmn/';
+
+  const dispatch = createEventDispatcher();
 
   let items: BPMN[] = [];
   let loading: boolean;
@@ -62,6 +64,13 @@
     newDialog = true;
   }
 
+  async function newVersion(id) {
+    await service.createVersion(id, {xml: ''})
+    const {version} = await service.get(id)
+
+    dispatch('versionCreated', {id, version})
+  }
+
   async function create() {
     if (newLoading) {
       return;
@@ -69,12 +78,12 @@
 
     newLoading = true;
 
-    const res = await service.create(form);
+    const id = await service.create(form);
 
     newDialog = false;
     newLoading = false;
 
-    // goto(baseLink + res.id + '/version/' + 1);
+    newVersion(id)
   }
 
   function adjustFilters() {
@@ -144,7 +153,8 @@
               use:clickOutside
               on:click_outside={() => (popup = null)}
             >
-              <Button href={baseLink + item.id + '/version/' + item.version}>Edit</Button>
+              <Button on:click={() => newVersion(item.id)}>New version</Button>
+              <Button on:click={() => dispatch('editVersion', {id: item.id, version: item.version})}>Edit</Button>
               <Button variant="outlined" on:click={() => del(index, item)}>Delete</Button>
             </div>
           {/if}
