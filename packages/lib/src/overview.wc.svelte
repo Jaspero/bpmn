@@ -78,7 +78,7 @@
 
     newLoading = true;
 
-    const id = await service.create(form);
+    const {id} = await service.create(form);
 
     newDialog = false;
     newLoading = false;
