@@ -14,7 +14,6 @@
   import type { BPMNService } from './types/bpmn.service';
 
   export let service: BPMNService;
-  export let baseLink = '/bpmn/';
 
   const dispatch = createEventDispatcher();
 
@@ -65,10 +64,10 @@
   }
 
   async function newVersion(id) {
-    await service.createVersion(id, {xml: ''})
-    const {version} = await service.get(id)
+    await service.createVersion(id, {xml: ''});
+    const {version} = await service.get(id);
 
-    dispatch('versionCreated', {id, version})
+    dispatch('versionCreated', {id, version});
   }
 
   async function create() {
@@ -80,10 +79,10 @@
 
     const {id} = await service.create(form);
 
+    await newVersion(id);
+
     newDialog = false;
     newLoading = false;
-
-    newVersion(id)
   }
 
   function adjustFilters() {

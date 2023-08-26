@@ -1,4 +1,4 @@
 export interface BPMNVersion {
-	version: number;
-	xml: string;
+  version: number;
+  xml: string;
 }
