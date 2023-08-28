@@ -28,6 +28,8 @@ export interface BPMNService {
 
   getTriggers(): Promise<BPMNTrigger[]>;
 
+  getVersions(id: string): Promise<number[]>;
+
   getVersion(id: string, version: number): Promise<BPMNVersion>;
 
   createVersion(id: string, item: { xml: string }): Promise<void>;

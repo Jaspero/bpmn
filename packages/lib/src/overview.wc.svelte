@@ -24,6 +24,11 @@
   let hasMore = false;
   let ref: any;
 
+  let loadingVersions = false;
+  let versionsDialog = false;
+  let versionDelLoading = false;
+  let versionsObj = {id:'', versions:[], version: 0};
+
   let newDialog = false;
   let newLoading = false;
   let form: { name: string; description: string };
@@ -53,6 +58,13 @@
     items.splice(index, 1);
     items = [...items];
     popup = null;
+  }
+  
+  async function delVersion(id: string, version: number){
+    versionDelLoading = true
+    await service.deleteVersion(id, version)
+    versionsObj.versions = versionsObj.versions.filter(el => el != version)
+    versionDelLoading = false
   }
 
   function openCreate() {
@@ -90,6 +102,17 @@
     items = [];
     filters = false;
     list().catch();
+  }
+
+  async function viewVersion(id, version){
+    loadingVersions = true;
+
+    versionsObj.id = id
+    versionsObj.version = version
+    versionsObj.versions = await service.getVersions(id)
+
+    loadingVersions = false
+    versionsDialog = true
   }
 
   onMount(async () => {
@@ -153,7 +176,8 @@
               on:click_outside={() => (popup = null)}
             >
               <Button on:click={() => newVersion(item.id)}>New version</Button>
-              <Button on:click={() => dispatch('editVersion', {id: item.id, version: item.version})}>Edit</Button>
+              <Button variant="outlined" on:click={() => dispatch('editVersion', {id: item.id, version: item.version})}>Edit</Button>
+              <Button variant="outlined" on:click={() => {viewVersion(item.id, item.version)}} loading={loadingVersions}>View versions</Button>
               <Button variant="outlined" on:click={() => del(index, item)}>Delete</Button>
             </div>
           {/if}
@@ -232,6 +256,24 @@
   <slot slot="actions">
     <Button type="submit" loading={newLoading}>Apply</Button>
   </slot>
+</Dialog>
+
+<Dialog bind:showing={versionsDialog}>
+  <slot slot="header">List of versions</slot>
+
+    <div class="flex flex-col">
+      {#each versionsObj.versions as version}
+        <div class="px-5 my-1">
+          <span class="mr-2">Version: {version}</span>
+          <Button variant="outlined" on:click={dispatch('editVersion', {id: versionsObj.id, version: version})}>Edit</Button>
+          {#if version != versionsObj.version}
+            <Button loading={versionDelLoading} on:click={() => delVersion(versionsObj.id, version)}>Delete</Button>
+          {:else}
+            <div></div>
+          {/if}
+        </div>
+      {/each}
+    </div>
 </Dialog>
 
 <style lang="postcss">
