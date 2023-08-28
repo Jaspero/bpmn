@@ -213,7 +213,7 @@
     -ms-flex-direction: column;
     flex-direction: column;
     width: 100%;
-    height: 100%;
+    height: 100vh;
   }
 
   .navigation {
@@ -238,6 +238,11 @@
     display: -moz-box;
     display: -ms-flexbox;
     display: flex;
+    -webkit-box-flex: 1;
+    -webkit-flex: 1 1 0;
+    -moz-box-flex: 1;
+    -ms-flex: 1 1 0px;
+    flex: 1 1 0;
   }
 
   .canvas {
