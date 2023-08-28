@@ -86,15 +86,10 @@
 
 <div id="layout" class="layout">
   <nav class="navigation">
-    <a class="button button-outlined" href={baseLink}>Back</a>
-    <button class="button button-filled" on:click={save} class:loading={saveLoading}>
-      {#if !saveLoading}
-        Save
-      {:else}
-        <span class="loading-spinner"></span>
-        Loading...
-      {/if}
-    </button>
+    <Button variant="outlined" on:click={() => dispatch('back')}>Back</Button>
+    <Button on:click={save} loading={saveLoading}>
+      Save
+    </Button>
   </nav>
 
   <div class="canvas-container">
@@ -156,14 +151,32 @@
 
 <style>
   .layout {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
     display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -moz-box-orient: vertical;
+    -moz-box-direction: normal;
+    -ms-flex-direction: column;
     flex-direction: column;
     width: 100%;
     height: 100%;
   }
 
   .navigation {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
     display: flex;
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    -moz-box-pack: justify;
+    -ms-flex-pack: justify;
     justify-content: space-between;
     background-color: var(--background-primary);
     padding: 1rem;
@@ -171,10 +184,18 @@
   }
 
   .canvas-container {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
     display: flex;
   }
 
   .canvas {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1 1 0;
+    -moz-box-flex: 1;
+    -ms-flex: 1 1 0px;
     flex: 1 1 0;
   }
 
@@ -193,7 +214,15 @@
   }
 
   .sidebar-header {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
     display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
     align-items: center;
     width: 100%;
     height: 3.5rem;
@@ -213,6 +242,7 @@
     line-height: 1rem;
     font-weight: bold;
     overflow: hidden;
+    -o-text-overflow: ellipsis;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -221,6 +251,7 @@
     font-size: .75rem;
     line-height: 1rem;
     overflow: hidden;
+    -o-text-overflow: ellipsis;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -229,15 +260,31 @@
     position: absolute;
     top: 50%;
     right: 100%;
+    -webkit-transform: translate(44px, -50%) rotate(-90deg);
+    -moz-transform: translate(44px, -50%) rotate(-90deg);
+    -ms-transform: translate(44px, -50%) rotate(-90deg);
+    -o-transform: translate(44px, -50%) rotate(-90deg);
     transform: translate(44px, -50%) rotate(-90deg);
     width: 128px;
     border-top: 2px solid var(--border-primary);
     border-left: 2px solid var(--border-primary);
     border-right: 2px solid var(--border-primary);
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
     display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
     align-items: center;
     padding: 0 .25rem;
+    -webkit-border-top-left-radius: .25rem;
+    -moz-border-radius-topleft: .25rem;
     border-top-left-radius: .25rem;
+    -webkit-border-top-right-radius: .25rem;
+    -moz-border-radius-topright: .25rem;
     border-top-right-radius: .25rem;
     background-color: var(--background-primary);
   }
@@ -251,6 +298,10 @@
   }
 
   .sidebar-toggle-icon {
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
     transform: rotate(90deg);
     border-bottom: 2px solid var(--border-primary);
     padding: .25rem;
@@ -275,7 +326,17 @@
   }
 
   .details-grid {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
     display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -moz-box-orient: vertical;
+    -moz-box-direction: normal;
+    -ms-flex-direction: column;
     flex-direction: column;
     gap: .5rem;
     margin-top: 1rem;
@@ -284,7 +345,17 @@
 
 
   .field-container {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
     display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -moz-box-orient: vertical;
+    -moz-box-direction: normal;
+    -ms-flex-direction: column;
     flex-direction: column;
     gap: .25rem;
   }
@@ -298,42 +369,12 @@
   select,
   textarea {
     border: 2px solid var(--border-primary);
+    -webkit-border-radius: .25rem;
+    -moz-border-radius: .25rem;
     border-radius: .25rem;
     padding: .25rem .5rem;
     font-size: .875rem;
   }
-
-  .button {
-    display: flex;
-    align-items: center;
-    height: 2.5rem;
-    border-radius: .25rem;
-    border: 2px solid transparent;
-    text-align: center;
-    min-width: 4rem;
-    padding: 0 1.5rem;
-    font-weight: bold;
-    cursor: pointer;
-  }
-
-  .button-outlined {
-    border-color: var(--border-primary);
-  }
-
-  .button-filled {
-    background-color: var(--primary-color);
-    color: var(--text-on-primary);
-  }
-
-  .button.loading {
-    border-color: var(--primary-color);
-    background-color: transparent;
-    color: var(--text-primary);
-    gap: 1rem;
-    font-weight: 400;
-  }
-
-
 
   .loading-overlay {
     z-index: 100;
@@ -341,8 +382,20 @@
     width: 100%;
     height: 100%;
     background-color: var(--background);
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
     display: flex;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -moz-box-pack: center;
+    -ms-flex-pack: center;
     justify-content: center;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
     align-items: center;
     gap: 1rem;
   }
@@ -352,12 +405,41 @@
     height: 1.5rem;
     border: 4px solid var(--border-primary);
     border-left-color: var(--primary-color);
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
     border-radius: 50%;
+    -webkit-animation: spin 1s linear infinite;
+    -moz-animation: spin 1s linear infinite;
+    -o-animation: spin 1s linear infinite;
     animation: spin 1s linear infinite;
+  }
+
+  @-webkit-keyframes spin {
+    to {
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+
+  @-moz-keyframes spin {
+    to {
+      -moz-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+
+  @-o-keyframes spin {
+    to {
+      -o-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
   }
 
   @keyframes spin {
     to {
+      -webkit-transform: rotate(360deg);
+      -moz-transform: rotate(360deg);
+      -o-transform: rotate(360deg);
       transform: rotate(360deg);
     }
   }

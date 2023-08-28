@@ -120,9 +120,9 @@
   });
 </script>
 
-<div class="p-4">
-  <div class="flex">
-    <div class="flex gap-4 flex-1">
+<div class="layout">
+  <div class="header">
+    <div class="search-bar">
       <Search />
       <Button variant="outlined" on:click={() => (filters = true)}>Filters</Button>
     </div>
@@ -130,7 +130,7 @@
     <Button on:click={openCreate}>Add BPMN</Button>
   </div>
 
-  <table class="w-full border-separate border-spacing-y-4">
+  <table>
     <tr>
       <th>Name</th>
       <th>Description</th>
@@ -161,16 +161,16 @@
             -
           {/if}
         </td>
-        <td class="relative">
+        <td class="actions-column">
           <button
-            class="flex items-center justify-center ml-auto cursor-pointer"
+            class="actions-button"
             on:click|stopPropagation={() => togglePopup(index)}
           >
             <span class="material-symbols-outlined">more_horiz</span>
           </button>
           {#if popup === index}
             <div
-              class="absolute z-10 top-full right-0 shadow-xl bg-white p-4 rounded-lg flex flex-col gap-4 min-w-[10rem]"
+              class="actions"
               transition:fly={{ y: -15, duration: 250 }}
               use:clickOutside
               on:click_outside={() => (popup = null)}
@@ -187,7 +187,7 @@
   </table>
 
   {#if hasMore}
-    <div class="w-max mx-auto">
+    <div class="load-more">
       <Button variant="outlined" {loading}>Load more</Button>
     </div>
   {/if}
@@ -196,25 +196,25 @@
 <Dialog bind:showing={filters} on:submit={adjustFilters}>
   <slot slot="header">Filters</slot>
 
-  <div class="flex flex-col gap-4 p-4">
-    <div class="flex gap-4">
-      <div class="flex flex-col gap-1 w-1/2">
-        <label for="startDate">Start date</label>
-        <input type="date" id="startDate" />
-      </div>
-
-      <div class="flex flex-col gap-1 w-1/2">
-        <label for="startDate">End date</label>
-        <input type="date" id="endDate" />
-      </div>
+  <div class="dialog-grid">
+    <div class="dialog-grid-item half">
+      <label for="startDate">Start date</label>
+      <input type="date" id="startDate" />
     </div>
 
-    <div class="flex flex-col gap-1">
+    <div class="dialog-grid-item half">
+      <label for="startDate">End date</label>
+      <input type="date" id="endDate" />
+    </div>
+
+
+    <div class="dialog-grid-item">
       <label for="email">Email</label>
       <input type="email" id="email" />
     </div>
 
-    <div class="flex flex-col gap-1">
+
+    <div class="dialog-grid-item">
       <label for="role">Role</label>
       <select name="role" id="role">
         <option value="" selected disabled>Select a role</option>
@@ -223,7 +223,8 @@
       </select>
     </div>
 
-    <div class="flex flex-col gap-1">
+
+    <div class="dialog-grid-item">
       <label for="active">Active</label>
       <select name="active" id="active">
         <option value="" selected disabled>Select active/inactive</option>
@@ -231,7 +232,8 @@
         <option value="inactive">Inactive</option>
       </select>
     </div>
-  </div>
+
+    </div>
 
   <slot slot="actions">
     <Button type="submit">Apply</Button>
@@ -241,13 +243,13 @@
 <Dialog bind:showing={newDialog} on:submit={create}>
   <slot slot="header">Create New BPMN</slot>
 
-  <div class="flex flex-col gap-4 p-4">
-    <div class="flex flex-col gap-1">
+  <div class="dialog-grid">
+    <div class="dialog-grid-item">
       <label for="name">Name</label>
       <input id="name" bind:value={form.name} required />
     </div>
 
-    <div class="flex flex-col gap-1">
+    <div class="dialog-grid-item">
       <label for="description">Description</label>
       <textarea id="description" rows="4" bind:value={form.description} />
     </div>
@@ -261,24 +263,206 @@
 <Dialog bind:showing={versionsDialog}>
   <slot slot="header">List of versions</slot>
 
-    <div class="flex flex-col">
+    <div class="dialog-grid">
       {#each versionsObj.versions as version}
-        <div class="px-5 my-1">
-          <span class="mr-2">Version: {version}</span>
+        <div class="dialog-grid-item inline">
+          <span>Version: {version}</span>
           <Button variant="outlined" on:click={() => dispatch('editVersion', {id: versionsObj.id, version: version})}>Edit</Button>
           {#if version != versionsObj.version}
             <Button loading={versionDelLoading} on:click={() => delVersion(versionsObj.id, version)}>Delete</Button>
-          {:else}
-            <div></div>
           {/if}
         </div>
       {/each}
     </div>
 </Dialog>
 
-<style lang="postcss">
+<style>
+  * {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+  }
+
+  .layout {
+    padding: 1rem;
+  }
+
+  .header {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+  }
+
+  .search-bar {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    gap: 1rem;
+    -webkit-box-flex: 1;
+    -webkit-flex: 1 1 0;
+    -moz-box-flex: 1;
+    -ms-flex: 1 1 0px;
+    flex: 1 1 0;
+  }
+
+
+
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 .5rem;
+  }
+
   table tr th,
   table tr td {
-    @apply border-t-2 border-b-2 first:border-l-2 first:rounded-l-lg last:border-r-2 last:rounded-r-lg first:text-left text-center last:text-right p-4;
+    border-top: 2px solid var(--border-primary);
+    border-bottom: 2px solid var(--border-primary);
+    text-align: center;
+    padding: 1rem;
+  }
+  table tr th:first-child,
+  table tr td:first-child {
+    text-align: left;
+    border-left: 2px solid var(--border-primary);
+  }
+
+  table tr th:last-child,
+  table tr td:last-child {
+    text-align: right;
+    border-right: 2px solid var(--border-primary);
+  }
+
+  .actions-column {
+    position: relative;
+  }
+
+  .actions-button {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -moz-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    margin-left: auto;
+    cursor: pointer;
+  }
+
+  .actions {
+    z-index: 10;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    -webkit-box-shadow: 0 0 12px rgba(0,0,0,.16);
+    -moz-box-shadow: 0 0 12px rgba(0,0,0,.16);
+    box-shadow: 0 0 12px rgba(0,0,0,.16);
+    background-color: var(--background-primary);
+    padding: 1rem;
+    -webkit-border-radius: .25rem;
+    -moz-border-radius: .25rem;
+    border-radius: .25rem;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -moz-box-orient: vertical;
+    -moz-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 10rem;
+  }
+
+  label {
+    font-size: .75rem;
+    font-weight: bold;
+  }
+
+  input,
+  select,
+  textarea {
+    border: 2px solid var(--border-primary);
+    -webkit-border-radius: .25rem;
+    -moz-border-radius: .25rem;
+    border-radius: .25rem;
+    padding: .25rem .5rem;
+    font-size: .875rem;
+  }
+
+  .load-more {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -moz-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+  }
+
+  .dialog-grid {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    padding: .5rem 0;
+  }
+
+  .dialog-grid-item {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    padding: .5rem 1rem;
+  }
+
+  .dialog-grid-item:not(.inline) {
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -moz-box-orient: vertical;
+    -moz-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+  }
+
+  .dialog-grid-item.inline {
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  .dialog-grid-item:not(.half) {
+    width: 100%;
+  }
+
+  .dialog-grid-item.half {
+    width: 50%;
   }
 </style>
