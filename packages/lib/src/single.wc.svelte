@@ -98,7 +98,7 @@
 
 <div id="layout" class="layout">
   <nav class="navigation">
-    <a class="button button-outlined" href={baseLink}>Back</a>
+    <a class="button button-outlined" on:click={() => dispatch('back')}>Back</a>
     <button class="button button-filled" on:click={save} class:loading={saveLoading}>
       {#if !saveLoading}
         Save
@@ -202,7 +202,6 @@
       {/if}
     </div>
   </div>
-</div>
 
 <style>
   .layout {
