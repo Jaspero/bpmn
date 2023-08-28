@@ -265,7 +265,7 @@
       {#each versionsObj.versions as version}
         <div class="px-5 my-1">
           <span class="mr-2">Version: {version}</span>
-          <Button variant="outlined" on:click={dispatch('editVersion', {id: versionsObj.id, version: version})}>Edit</Button>
+          <Button variant="outlined" on:click={() => dispatch('editVersion', {id: versionsObj.id, version: version})}>Edit</Button>
           {#if version != versionsObj.version}
             <Button loading={versionDelLoading} on:click={() => delVersion(versionsObj.id, version)}>Delete</Button>
           {:else}
