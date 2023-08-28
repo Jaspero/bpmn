@@ -1,5 +1,4 @@
-export function clickOutside(node: any, options?: boolean | AddEventListenerOptions) {
-  
+export function clickOutside(node: any, options?: boolean | AddEventListenerOptions): any {
   function dispatch() {
     node.dispatchEvent(new CustomEvent('click_outside', node));
   }

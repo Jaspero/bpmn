@@ -1,17 +1,29 @@
-import type {BPMNVersion} from '../../../dist/lib/types/BPMN-version.interface';
-import type {BPMN} from '../../../dist/lib/types/BPMN.interface';
-import type {BPMNService} from '../../../dist/lib/types/BPMN.service';
-import type {BPMNTrigger} from '../../../dist/lib/types/bpmn-trigger.interface';
+import type { BPMNVersion } from '../../../dist/lib/types/BPMN-version.interface';
+import type { BPMN } from '../../../dist/lib/types/BPMN.interface';
+import type { BPMNService } from '../../../dist/lib/types/BPMN.service';
+import type { BPMNTrigger } from '../../../dist/lib/types/bpmn-trigger.interface';
 
 const mockItems = [
-	{id: Date.now().toString(), name: 'foo', version: 1, createdOn: Date.now(), lastUpdatedOn: Date.now()},
-	{id: Date.now().toString(), name: 'bar', version: 1, createdOn: Date.now(), lastUpdatedOn: Date.now()},
+  {
+    id: Date.now().toString(),
+    name: 'foo',
+    version: 1,
+    createdOn: Date.now(),
+    lastUpdatedOn: Date.now()
+  },
+  {
+    id: Date.now().toString(),
+    name: 'bar',
+    version: 1,
+    createdOn: Date.now(),
+    lastUpdatedOn: Date.now()
+  }
 ];
 
 const mockVersion = [
-	{
-		version: 1,
-		xml: `<?xml version="1.0" encoding="UTF-8"?>
+  {
+    version: 1,
+    xml: `<?xml version="1.0" encoding="UTF-8"?>
 		<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
 			<collaboration id="sid-c0e745ff-361e-4afb-8c8d-2a1fc32b1424">
 				<participant id="sid-87F4C1D6-25E1-4A45-9DA7-AD945993D06F" name="Customer" processRef="sid-C3803939-0872-457F-8336-EAE484DC4A04" />
@@ -159,55 +171,58 @@ const mockVersion = [
 				</bpmndi:BPMNLabelStyle>
 			</bpmndi:BPMNDiagram>
 		</definitions>`
-	}
+  }
 ];
 
 export class MockBPMNService implements BPMNService {
-	async list(lastToken?: any): Promise<BPMN[]> {
-		return mockItems;
-	}
-	async get(id: string): Promise<BPMN> {
-		return mockItems[0];
-	}
-	async create(item: {name: string; description?: string | undefined;}): Promise<{id: string;}> {
-		return {id: Date.now().toString()};
-	}
-	async update(id: string, update: {name?: string | undefined; description?: string | undefined;}): Promise<void> {
-		return;
-	}
-	async delete(id: string): Promise<void> {
-		return;
-	}
-	async getVersion(id: string, version: number): Promise<BPMNVersion> {
-		return mockVersion[0];
-	}
-	async createVersion(id: string, item: {xml: string;}): Promise<void> {
-		return;
-	}
-	async updateVersion(id: string, version: number, item: {xml: string;}): Promise<void> {
-		return;
-	}
-	async deleteVersion(id: string, version: number): Promise<void> {
-		return;
-	}
+  async list(lastToken?: any): Promise<BPMN[]> {
+    return mockItems;
+  }
+  async get(id: string): Promise<BPMN> {
+    return mockItems[0];
+  }
+  async create(item: { name: string; description?: string | undefined }): Promise<{ id: string }> {
+    return { id: Date.now().toString() };
+  }
+  async update(
+    id: string,
+    update: { name?: string | undefined; description?: string | undefined }
+  ): Promise<void> {
+    return;
+  }
+  async delete(id: string): Promise<void> {
+    return;
+  }
+  async getVersion(id: string, version: number): Promise<BPMNVersion> {
+    return mockVersion[0];
+  }
+  async createVersion(id: string, item: { xml: string }): Promise<void> {
+    return;
+  }
+  async updateVersion(id: string, version: number, item: { xml: string }): Promise<void> {
+    return;
+  }
+  async deleteVersion(id: string, version: number): Promise<void> {
+    return;
+  }
 
-	async getTriggers(): Promise<BPMNTrigger[]> {
-		return [
-			{
-				id: 'document-created',
-				name: 'Document Created',
-				description: `Triggered when a new document is created.`
-			},
-			{
-				id: 'document-updated',
-				name: 'Document Updated',
-				description: `Triggered when a document is updated.`
-			},
-			{
-				id: 'document-deleted',
-				name: 'Document Deleted',
-				description: `Triggered when a document is deleted.`
-			}
-		];
-	}
+  async getTriggers(): Promise<BPMNTrigger[]> {
+    return [
+      {
+        id: 'document-created',
+        name: 'Document Created',
+        description: `Triggered when a new document is created.`
+      },
+      {
+        id: 'document-updated',
+        name: 'Document Updated',
+        description: `Triggered when a document is updated.`
+      },
+      {
+        id: 'document-deleted',
+        name: 'Document Deleted',
+        description: `Triggered when a document is deleted.`
+      }
+    ];
+  }
 }
