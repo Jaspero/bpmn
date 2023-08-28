@@ -19,7 +19,6 @@
   export let service: BPMNService;
   export let id: string;
   export let version: number;
-  export let baseLink = '/BPMN/';
 
   let loading = true;
   let sidebar = false;
@@ -29,8 +28,14 @@
   let instanceBackup: BPMN;
   let versionInstance: BPMNVersion;
   let triggers: BPMNTrigger[];
+  let triggerVersions: any = {};
+
+  let selectedTrigger;
+  let selectedTriggerVersion;
 
   let saveLoading = false;
+
+  $: if(instance) instance.trigger = `${selectedTrigger}-v${selectedTriggerVersion}`
 
   async function save() {
     const { xml } = await modeler.saveXML({ format: true });
@@ -60,7 +65,14 @@
       service.getTriggers()
     ]);
 
+    triggers.forEach(el => triggerVersions[el.id] = el.versions)
+
     instanceBackup = { ...instance };
+
+    if(instanceBackup.trigger) {
+      selectedTrigger = instanceBackup.trigger.split('-v')[0]
+      selectedTriggerVersion = instanceBackup.trigger.split('-v')[1]
+    }
 
     // @ts-ignore
     modeler = new BpmnJS({
@@ -142,12 +154,49 @@
               <label for="versionId">Version ID</label>
               <input id="versionId" bind:value={versionInstance.version} readonly />
             </div>
-          </div>
-        </details>
-      </div>
-    {/if}
+          </details>
+
+          <details>
+            <summary>Trigger</summary>
+            <div class="details-grid">
+              <div class="field-container">
+                <label for="trigger">Trigger</label>
+                <select id="trigger" bind:value={selectedTrigger}>
+                  <option value="">Select Trigger</option>
+                  {#each triggers as trigger}
+                    <option value={trigger.id}>{trigger.name}</option>
+                  {/each}
+                </select>
+                {#if selectedTrigger}
+                  <select id="trigger-version" bind:value={selectedTriggerVersion}>
+                    <option value="">Select Trigger</option>
+                    {#each triggerVersions[selectedTrigger] as version}
+                      <option value={version}>{version}</option>
+                    {/each}
+                  </select>
+                {/if}
+              </div>
+
+              <div class="field-container">
+                <label for="triggerCondition">Trigger Condition</label>
+                <textarea id="triggerCondition" rows="4" bind:value={instance.triggerCondition} />
+              </div>
+            </div>
+          </details>
+
+          <details>
+            <summary>Version</summary>
+            <div class="details-grid">
+              <div class="field-container">
+                <label for="version">Version Number</label>
+                <input type="number" id="version" bind:value={versionInstance.version} readonly />
+              </div>
+            </div>
+          </details>
+        </div>
+      {/if}
+    </div>
   </div>
-</div>
 
 <style>
   .layout {
