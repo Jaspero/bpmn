@@ -104,7 +104,7 @@
     list().catch();
   }
 
-  async function viewVersion(id, version){
+  async function viewVersions(id, version){
     loadingVersions = true;
 
     versionsObj.id = id
@@ -177,7 +177,7 @@
             >
               <Button on:click={() => newVersion(item.id)}>New version</Button>
               <Button variant="outlined" on:click={() => dispatch('editVersion', {id: item.id, version: item.version})}>Edit</Button>
-              <Button variant="outlined" on:click={() => {viewVersion(item.id, item.version)}} loading={loadingVersions}>View versions</Button>
+              <Button variant="outlined" on:click={() => {viewVersions(item.id, item.version)}} loading={loadingVersions}>View versions</Button>
               <Button variant="outlined" on:click={() => del(index, item)}>Delete</Button>
             </div>
           {/if}
