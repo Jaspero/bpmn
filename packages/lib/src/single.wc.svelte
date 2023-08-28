@@ -7,12 +7,14 @@
 
 <script lang="ts">
   import Button from './Button.svelte';
-  import { onMount } from 'svelte';
+  import { onMount, createEventDispatcher } from 'svelte';
   import type { BPMNService } from './types/bpmn.service';
   import type { BPMNVersion } from './types/bpmn-version.interface';
   import type { BPMN } from './types/bpmn.interface';
   import { loadBpmn } from './load-bpmn';
   import type { BPMNTrigger } from './types/bpmn-trigger.interface';
+
+  const dispatch = createEventDispatcher()
 
   export let service: BPMNService;
   export let id: string;
@@ -45,7 +47,8 @@
     }
 
     await service.createVersion(id, { xml });
-    // goto(baseLink);
+    
+    dispatch('saved')
   }
 
   onMount(async () => {
@@ -92,7 +95,7 @@
 
   <div id="layout" class="flex flex-col w-full h-full">
     <nav class="flex justify-between bg-white p-4 border-b-2">
-      <Button variant="outlined" href={baseLink}>Back</Button>
+      <Button variant="outlined" on:click={() => dispatch('back')}>Back</Button>
       <Button on:click={save} loading={saveLoading}>Save</Button>
     </nav>
 
