@@ -193,6 +193,9 @@ export class MockBPMNService implements BPMNService {
   async delete(id: string): Promise<void> {
     return;
   }
+	async getVersions(id:string): Promise<number[]> {
+		return [1, 2, 3];
+	}
   async getVersion(id: string, version: number): Promise<BPMNVersion> {
     return mockVersion[0];
   }
@@ -211,17 +214,14 @@ export class MockBPMNService implements BPMNService {
       {
         id: 'document-created',
         name: 'Document Created',
-        description: `Triggered when a new document is created.`
-      },
-      {
-        id: 'document-updated',
-        name: 'Document Updated',
-        description: `Triggered when a document is updated.`
+        description: `Triggered when a new document is created.`,
+				versions: [1, 2]
       },
       {
         id: 'document-deleted',
         name: 'Document Deleted',
-        description: `Triggered when a document is deleted.`
+        description: `Triggered when a document is deleted.`,
+				versions: [2, 3]
       }
     ];
   }
