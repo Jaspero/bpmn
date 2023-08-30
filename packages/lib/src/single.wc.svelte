@@ -14,7 +14,7 @@
   import { loadBpmn } from './load-bpmn';
   import type { BPMNTrigger } from './types/bpmn-trigger.interface';
 
-  const dispatch = createEventDispatcher()
+  const dispatch = createEventDispatcher();
 
   export let service: BPMNService;
   export let id: string;
@@ -35,7 +35,7 @@
 
   let saveLoading = false;
 
-  $: if(instance) instance.trigger = `${selectedTrigger}-v${selectedTriggerVersion}`
+  $: if (instance) instance.trigger = `${selectedTrigger}-v${selectedTriggerVersion}`;
 
   async function save() {
     const { xml } = await modeler.saveXML({ format: true });
@@ -53,7 +53,7 @@
 
     await service.updateVersion(id, version, { xml });
 
-    dispatch('saved')
+    dispatch('saved');
   }
 
   onMount(async () => {
@@ -65,13 +65,13 @@
       service.getTriggers()
     ]);
 
-    triggers.forEach(el => triggerVersions[el.id] = el.versions)
+    triggers.forEach((el) => (triggerVersions[el.id] = el.versions));
 
     instanceBackup = { ...instance };
 
-    if(instanceBackup.trigger) {
-      selectedTrigger = instanceBackup.trigger.split('-v')[0]
-      selectedTriggerVersion = instanceBackup.trigger.split('-v')[1]
+    if (instanceBackup.trigger) {
+      selectedTrigger = instanceBackup.trigger.split('-v')[0];
+      selectedTriggerVersion = instanceBackup.trigger.split('-v')[1];
     }
 
     // @ts-ignore
@@ -99,9 +99,7 @@
 <div id="layout" class="layout">
   <nav class="navigation">
     <Button variant="outlined" on:click={() => dispatch('back')}>Back</Button>
-    <Button on:click={save} loading={saveLoading}>
-      Save
-    </Button>
+    <Button on:click={save} loading={saveLoading}>Save</Button>
   </nav>
 
   <div class="canvas-container">
@@ -109,15 +107,15 @@
 
     {#if instance && versionInstance}
       <div class="sidebar" class:open={sidebar}>
-        <button class="sidebar-toggle"
-                on:click={() => (sidebar = !sidebar)}
-        >
+        <button class="sidebar-toggle" on:click={() => (sidebar = !sidebar)}>
           <span class="sidebar-toggle-label"> Details </span>
           <span class="sidebar-toggle-icon material-symbols-outlined"> menu </span>
         </button>
 
         <div class="sidebar-header">
-          <span class="material-symbols-outlined sidebar-header-icon"> check_box_outline_blank </span>
+          <span class="material-symbols-outlined sidebar-header-icon">
+            check_box_outline_blank
+          </span>
 
           <div>
             <h2 class="sidebar-header-title">DMN</h2>
@@ -140,7 +138,35 @@
           </div>
         </details>
 
-        <details class="sidebar-details p-2 border-b-2 cursor-pointer">
+        <details>
+          <summary>Trigger</summary>
+          <div class="details-grid">
+            <div class="field-container">
+              <label for="trigger">Trigger</label>
+              <select id="trigger" bind:value={selectedTrigger}>
+                <option value="">Select Trigger</option>
+                {#each triggers as trigger}
+                  <option value={trigger.id}>{trigger.name}</option>
+                {/each}
+              </select>
+              {#if selectedTrigger}
+                <select id="trigger-version" bind:value={selectedTriggerVersion}>
+                  <option value="">Select Trigger</option>
+                  {#each triggerVersions[selectedTrigger] as version}
+                    <option value={version}>{version}</option>
+                  {/each}
+                </select>
+              {/if}
+            </div>
+
+            <div class="field-container">
+              <label for="triggerCondition">Trigger Condition</label>
+              <textarea id="triggerCondition" rows="4" bind:value={instance.triggerCondition} />
+            </div>
+          </div>
+        </details>
+
+        <details>
           <summary>Version</summary>
           <div class="details-grid">
             <div class="field-container">
@@ -148,55 +174,11 @@
               <input type="number" id="version" bind:value={versionInstance.version} readonly />
             </div>
           </div>
-
-          <div class="details-grid">
-            <div class="field-container">
-              <label for="versionId">Version ID</label>
-              <input id="versionId" bind:value={versionInstance.version} readonly />
-            </div>
-          </details>
-
-          <details>
-            <summary>Trigger</summary>
-            <div class="details-grid">
-              <div class="field-container">
-                <label for="trigger">Trigger</label>
-                <select id="trigger" bind:value={selectedTrigger}>
-                  <option value="">Select Trigger</option>
-                  {#each triggers as trigger}
-                    <option value={trigger.id}>{trigger.name}</option>
-                  {/each}
-                </select>
-                {#if selectedTrigger}
-                  <select id="trigger-version" bind:value={selectedTriggerVersion}>
-                    <option value="">Select Trigger</option>
-                    {#each triggerVersions[selectedTrigger] as version}
-                      <option value={version}>{version}</option>
-                    {/each}
-                  </select>
-                {/if}
-              </div>
-
-              <div class="field-container">
-                <label for="triggerCondition">Trigger Condition</label>
-                <textarea id="triggerCondition" rows="4" bind:value={instance.triggerCondition} />
-              </div>
-            </div>
-          </details>
-
-          <details>
-            <summary>Version</summary>
-            <div class="details-grid">
-              <div class="field-container">
-                <label for="version">Version Number</label>
-                <input type="number" id="version" bind:value={versionInstance.version} readonly />
-              </div>
-            </div>
-          </details>
-        </div>
-      {/if}
-    </div>
+        </details>
+      </div>
+    {/if}
   </div>
+</div>
 
 <style>
   .layout {
@@ -280,9 +262,9 @@
     align-items: center;
     width: 100%;
     height: 3.5rem;
-    background-color: rgba(0,0,0,.02);
-    padding: 0 .5rem;
-    gap: .5rem;
+    background-color: rgba(0, 0, 0, 0.02);
+    padding: 0 0.5rem;
+    gap: 0.5rem;
     border-bottom: 2px solid var(--border-primary);
   }
 
@@ -292,7 +274,7 @@
 
   .sidebar-header-title {
     text-transform: uppercase;
-    font-size: .75rem;
+    font-size: 0.75rem;
     line-height: 1rem;
     font-weight: bold;
     overflow: hidden;
@@ -302,7 +284,7 @@
   }
 
   .sidebar-header-subtitle {
-    font-size: .75rem;
+    font-size: 0.75rem;
     line-height: 1rem;
     overflow: hidden;
     -o-text-overflow: ellipsis;
@@ -333,13 +315,13 @@
     -moz-box-align: center;
     -ms-flex-align: center;
     align-items: center;
-    padding: 0 .25rem;
-    -webkit-border-top-left-radius: .25rem;
-    -moz-border-radius-topleft: .25rem;
-    border-top-left-radius: .25rem;
-    -webkit-border-top-right-radius: .25rem;
-    -moz-border-radius-topright: .25rem;
-    border-top-right-radius: .25rem;
+    padding: 0 0.25rem;
+    -webkit-border-top-left-radius: 0.25rem;
+    -moz-border-radius-topleft: 0.25rem;
+    border-top-left-radius: 0.25rem;
+    -webkit-border-top-right-radius: 0.25rem;
+    -moz-border-radius-topright: 0.25rem;
+    border-top-right-radius: 0.25rem;
     background-color: var(--background-primary);
   }
 
@@ -358,21 +340,19 @@
     -o-transform: rotate(90deg);
     transform: rotate(90deg);
     border-bottom: 2px solid var(--border-primary);
-    padding: .25rem;
+    padding: 0.25rem;
   }
 
-
-
   details {
-    padding: .5rem;
+    padding: 0.5rem;
     border-bottom: 2px solid var(--border-primary);
     cursor: pointer;
   }
 
   summary {
-    margin: -.5rem;
-    padding: .5rem;
-    font-size: .875rem;
+    margin: -0.5rem;
+    padding: 0.5rem;
+    font-size: 0.875rem;
   }
 
   summary:hover {
@@ -392,11 +372,9 @@
     -moz-box-direction: normal;
     -ms-flex-direction: column;
     flex-direction: column;
-    gap: .5rem;
+    gap: 0.5rem;
     margin-top: 1rem;
   }
-
-
 
   .field-container {
     display: -webkit-box;
@@ -411,11 +389,11 @@
     -moz-box-direction: normal;
     -ms-flex-direction: column;
     flex-direction: column;
-    gap: .25rem;
+    gap: 0.25rem;
   }
 
   label {
-    font-size: .75rem;
+    font-size: 0.75rem;
     font-weight: bold;
   }
 
@@ -423,11 +401,11 @@
   select,
   textarea {
     border: 2px solid var(--border-primary);
-    -webkit-border-radius: .25rem;
-    -moz-border-radius: .25rem;
-    border-radius: .25rem;
-    padding: .25rem .5rem;
-    font-size: .875rem;
+    -webkit-border-radius: 0.25rem;
+    -moz-border-radius: 0.25rem;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
   }
 
   .loading-overlay {
