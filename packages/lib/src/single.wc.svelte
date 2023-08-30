@@ -43,12 +43,19 @@
     const changes = Object.keys(instance).some((key) => instance[key] !== instanceBackup[key]);
 
     if (changes) {
-      await service.update(id, {
-        name: instance.name,
-        description: instance.description,
-        trigger: instance.trigger,
-        triggerCondition: instance.triggerCondition
-      });
+      if((instance.trigger != instanceBackup.trigger) || (instance.trigger != instanceBackup.trigger)){
+        await service.update(id, {
+          name: instance.name,
+          description: instance.description,
+          trigger: instance.trigger,
+          triggerCondition: instance.triggerCondition
+        });
+      } else {
+        await service.update(id, {
+          name: instance.name,
+          description: instance.description
+        });
+      }
     }
 
     await service.updateVersion(id, version, { xml });
