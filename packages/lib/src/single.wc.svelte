@@ -51,7 +51,7 @@
       });
     }
 
-    await service.createVersion(id, { xml });
+    await service.updateVersion(id, version, { xml });
 
     dispatch('saved')
   }
