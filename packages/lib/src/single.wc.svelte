@@ -56,6 +56,10 @@
         trigger: versionInstance.trigger,
         triggerCondition: versionInstance.triggerCondition
       });
+    } else if (versionInstance.xml != xml) {
+      await service.updateVersion(id, version, {
+        xml: xml
+      });
     }
 
     dispatch('saved');
