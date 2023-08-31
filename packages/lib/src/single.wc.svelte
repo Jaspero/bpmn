@@ -73,6 +73,7 @@
     triggers.forEach((el) => (triggerVersions[el.id] = el.versions));
 
     instanceBackup = { ...instance };
+    versionInstanceBackup = { ...versionInstance };
 
     if (versionInstance.trigger) {
       selectedTrigger = versionInstance.trigger.split('-v')[0];

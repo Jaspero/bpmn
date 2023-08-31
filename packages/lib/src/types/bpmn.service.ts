@@ -10,8 +10,6 @@ export interface BPMNService {
   create(item: {
     name: string;
     description?: string;
-    trigger?: string;
-    triggerCondition?: string;
   }): Promise<{ id: string }>;
 
   update(
