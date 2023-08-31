@@ -51,7 +51,7 @@
       });
     }
 
-    if((versionInstance.trigger != versionInstanceBackup.trigger) || (versionInstance.trigger != versionInstanceBackup.trigger)){
+    if(selectedTrigger && selectedTriggerVersion && (versionInstance.trigger != versionInstanceBackup.trigger) || (versionInstance.triggerCondition != versionInstanceBackup.triggerCondition)){
       await service.updateVersion(id, version, {
         xml: xml,
         trigger: versionInstance.trigger,
