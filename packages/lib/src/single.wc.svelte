@@ -27,6 +27,7 @@
   let instance: BPMN;
   let instanceBackup: BPMN;
   let versionInstance: BPMNVersion;
+  let versionInstanceBackup: BPMNVersion;
   let triggers: BPMNTrigger[];
   let triggerVersions: any = {};
 
@@ -35,30 +36,27 @@
 
   let saveLoading = false;
 
-  $: if (instance) instance.trigger = `${selectedTrigger}-v${selectedTriggerVersion}`;
+  $: if (versionInstance) versionInstance.trigger = `${selectedTrigger}-v${selectedTriggerVersion}`;
 
   async function save() {
     const { xml } = await modeler.saveXML({ format: true });
 
     const changes = Object.keys(instance).some((key) => instance[key] !== instanceBackup[key]);
 
-    if (changes) {
-      if((instance.trigger != instanceBackup.trigger) || (instance.trigger != instanceBackup.trigger)){
-        await service.update(id, {
-          name: instance.name,
-          description: instance.description,
-          trigger: instance.trigger,
-          triggerCondition: instance.triggerCondition
-        });
-      } else {
-        await service.update(id, {
-          name: instance.name,
-          description: instance.description
-        });
-      }
+    if(changes){
+      await service.update(id, {
+        name: instance.name,
+        description: instance.description
+      });
     }
 
-    await service.updateVersion(id, version, { xml });
+    if((versionInstance.trigger != versionInstanceBackup.trigger) || (versionInstance.trigger != versionInstanceBackup.trigger)){
+      await service.updateVersion(id, version, {
+        xml: xml,
+        trigger: versionInstance.trigger,
+        triggerCondition: versionInstance.triggerCondition
+      });
+    }
 
     dispatch('saved');
   }
@@ -76,9 +74,9 @@
 
     instanceBackup = { ...instance };
 
-    if (instanceBackup.trigger) {
-      selectedTrigger = instanceBackup.trigger.split('-v')[0];
-      selectedTriggerVersion = instanceBackup.trigger.split('-v')[1];
+    if (versionInstance.trigger) {
+      selectedTrigger = versionInstance.trigger.split('-v')[0];
+      selectedTriggerVersion = versionInstance.trigger.split('-v')[1];
     }
 
     // @ts-ignore
@@ -168,7 +166,7 @@
 
             <div class="field-container">
               <label for="triggerCondition">Trigger Condition</label>
-              <textarea id="triggerCondition" rows="4" bind:value={instance.triggerCondition} />
+              <textarea id="triggerCondition" rows="4" bind:value={versionInstance.triggerCondition} />
             </div>
           </div>
         </details>

@@ -19,8 +19,6 @@ export interface BPMNService {
     update: {
       name?: string;
       description?: string;
-      trigger?: string;
-      triggerCondition?: string;
     }
   ): Promise<void>;
 
@@ -32,9 +30,17 @@ export interface BPMNService {
 
   getVersion(id: string, version: number): Promise<BPMNVersion>;
 
-  createVersion(id: string, item: { xml: string }): Promise<void>;
+  createVersion(id: string, item: { 
+    xml: string
+    trigger?: string;
+    triggerCondition?: string; 
+  }): Promise<void>;
 
-  updateVersion(id: string, version: number, item: { xml: string }): Promise<void>;
+  updateVersion(id: string, version: number, item: { 
+    xml: string, 
+    trigger?: string;
+    triggerCondition?: string; 
+  }): Promise<void>;
 
   deleteVersion(id: string, version: number): Promise<void>;
 }
