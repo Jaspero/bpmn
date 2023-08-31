@@ -39,6 +39,7 @@
   $: if (versionInstance) versionInstance.trigger = `${selectedTrigger}-v${selectedTriggerVersion}`;
 
   async function save() {
+    saveLoading = true
     const { xml } = await modeler.saveXML({ format: true });
 
     const changes = Object.keys(instance).some((key) => instance[key] !== instanceBackup[key]);
@@ -61,6 +62,8 @@
         xml: xml
       });
     }
+
+    saveLoading = false
 
     dispatch('saved');
   }
