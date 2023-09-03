@@ -36,34 +36,45 @@
 
   let saveLoading = false;
 
-  $: if (versionInstance) versionInstance.trigger = `${selectedTrigger}-v${selectedTriggerVersion}`;
+  $: if (versionInstance) {
+    versionInstance.trigger = `${selectedTrigger}-v${selectedTriggerVersion}`;
+  }
 
   async function save() {
-    saveLoading = true
+    saveLoading = true;
     const { xml } = await modeler.saveXML({ format: true });
 
     const changes = Object.keys(instance).some((key) => instance[key] !== instanceBackup[key]);
 
-    if(changes){
+    if (changes) {
       await service.update(id, {
         name: instance.name,
         description: instance.description
       });
     }
 
-    if(selectedTrigger && selectedTriggerVersion && (versionInstance.trigger != versionInstanceBackup.trigger) || (versionInstance.triggerCondition != versionInstanceBackup.triggerCondition)){
+    if (
+      (
+        selectedTrigger &&
+        selectedTriggerVersion &&
+        versionInstance.trigger != versionInstanceBackup.trigger
+      ) ||
+      versionInstance.triggerCondition != versionInstanceBackup.triggerCondition
+    ) {
       await service.updateVersion(id, version, {
-        xml: xml,
+        xml,
         trigger: versionInstance.trigger,
-        triggerCondition: versionInstance.triggerCondition
+        triggerCondition: versionInstance.triggerCondition,
+        active: versionInstance.active
       });
     } else if (versionInstance.xml != xml) {
       await service.updateVersion(id, version, {
-        xml: xml
+        xml,
+        active: versionInstance.active
       });
     }
 
-    saveLoading = false
+    saveLoading = false;
 
     dispatch('saved');
   }
@@ -85,6 +96,7 @@
     if (versionInstance.trigger) {
       selectedTrigger = versionInstance.trigger.split('-v')[0];
       selectedTriggerVersion = versionInstance.trigger.split('-v')[1];
+
     }
 
     // @ts-ignore
@@ -131,7 +143,7 @@
           </span>
 
           <div>
-            <h2 class="sidebar-header-title">DMN</h2>
+            <h2 class="sidebar-header-title">BPMN</h2>
             <p class="sidebar-header-subtitle">Settings</p>
           </div>
         </div>
@@ -148,6 +160,10 @@
               <label for="description">Description</label>
               <textarea id="description" rows="4" bind:value={instance.description} />
             </div>
+
+            <label>
+              <input type="checkbox" bind:checked={versionInstance.active} /> Active
+            </label>
           </div>
         </details>
 
@@ -174,7 +190,11 @@
 
             <div class="field-container">
               <label for="triggerCondition">Trigger Condition</label>
-              <textarea id="triggerCondition" rows="4" bind:value={versionInstance.triggerCondition} />
+              <textarea
+                id="triggerCondition"
+                rows="4"
+                bind:value={versionInstance.triggerCondition}
+              />
             </div>
           </div>
         </details>

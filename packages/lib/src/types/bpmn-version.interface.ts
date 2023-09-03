@@ -3,4 +3,5 @@ export interface BPMNVersion {
   xml: string;
   trigger?: string;
   triggerCondition?: string;
+  active?: boolean;
 }
