@@ -72,6 +72,10 @@
         xml,
         active: versionInstance.active
       });
+    } else if (versionInstance.active != versionInstanceBackup.active) {
+      await service.updateVersion(id, version, {
+        active: versionInstance.active
+      });
     }
 
     saveLoading = false;
