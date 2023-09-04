@@ -23,6 +23,9 @@
   let loading = true;
   let sidebar = false;
 
+  let selectedTask: string | null = null;
+  let selectedService;
+
   let modeler: any;
   let instance: BPMN;
   let instanceBackup: BPMN;
@@ -67,6 +70,10 @@
 
     dispatch('saved');
   }
+  
+  function handleServiceSelection(){
+
+  }
 
   onMount(async () => {
     await loadBpmn();
@@ -94,6 +101,18 @@
         bindTo: window
       }
     });
+
+    const eventBus = modeler.get('eventBus')
+
+    eventBus.on('element.click', (e) => {
+      console.log(e)
+      if(e.element.type == 'bpmn:Task' && e.gfx.classList.contains('selected')){
+        selectedTask = e.element.id
+      } else {
+        selectedTask = null
+      }
+      console.log(selectedTask)
+    })
 
     // TODO: Handle warnings and errors
     const { warnings } = await modeler.importXML(versionInstance.xml);
@@ -150,6 +169,21 @@
             </div>
           </div>
         </details>
+
+        {#if selectedTask}
+          <details>
+            <summary>Services</summary>
+            <div class="details-grid">
+              <div class="field-container">
+                <label for="service">Service</label>
+                <select id="service" bind:value={selectedService} on:change={handleServiceSelection}  required>
+                  {#each ['None', 'firestore', 'stripe'] as service}
+                    <option value={service}>{service}</option>
+                  {/each}
+                </select>
+              </div>
+          </details>
+        {/if}
 
         <details>
           <summary>Trigger</summary>
