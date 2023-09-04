@@ -38,7 +38,7 @@ export interface BPMNService {
     xml?: string, 
     trigger?: string;
     triggerCondition?: string; 
-    active: boolean;
+    active?: boolean;
   }): Promise<void>;
 
   deleteVersion(id: string, version: number): Promise<void>;

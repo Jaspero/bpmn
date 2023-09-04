@@ -62,7 +62,7 @@
       versionInstance.triggerCondition != versionInstanceBackup.triggerCondition
     ) {
       await service.updateVersion(id, version, {
-        xml,
+        ...(versionInstance.xml != xml && {xml}),
         trigger: versionInstance.trigger,
         triggerCondition: versionInstance.triggerCondition,
         active: versionInstance.active
@@ -70,14 +70,13 @@
     } else if (versionInstance.xml != xml) {
       await service.updateVersion(id, version, {
         xml,
-        active: versionInstance.active
+        ...(versionInstance.active != versionInstanceBackup.active && {active: versionInstance.active})
       });
     } else if (versionInstance.active != versionInstanceBackup.active) {
       await service.updateVersion(id, version, {
         active: versionInstance.active
       });
     }
-
     saveLoading = false;
 
     dispatch('saved');
