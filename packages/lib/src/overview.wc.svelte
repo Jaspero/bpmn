@@ -134,6 +134,8 @@
 
     loadingVersions = false
     versionsDialog = true
+
+    popup = null;
   }
 
   onMount(async () => {
@@ -204,7 +206,10 @@
                           on:click_outside={() => (popup = null)}>
                     <button class="button-filled {buttonColor}" on:click={() => newVersion(item.id)}>New version</button>
                     <button class="button-outlined {buttonColor}" on:click={() => dispatch('editVersion', {id: item.id, version: item.version})}>Edit</button>
-                    <button class="button-outlined {buttonColor}" class:loading={loadingVersions} on:click={() => {viewVersions(item.id, item.version)}}>Edit</button>
+                    <button class="button-outlined {buttonColor}"
+                            class:loading={loadingVersions}
+                            on:click={() => viewVersions(item.id, item.version)}
+                    >Versions</button>
                     <button class="button-outlined {buttonColor}" on:click={() => del(index, item)}>Delete</button>
                   </div>
                 </div>
@@ -314,7 +319,7 @@
 
 {#if versionsDialog}
   <div class="dialog-overlay">
-    <form class="dialog" use:clickOutside={true} on:click_outside={() => (newDialog = false)} on:submit|preventDefault={create}>
+    <form class="dialog" use:clickOutside={true} on:click_outside={() => (versionsDialog = false)} on:submit|preventDefault={create}>
       <div class="dialog-header">
         <h2 class="dialog-header-title">List of versions</h2>
 
