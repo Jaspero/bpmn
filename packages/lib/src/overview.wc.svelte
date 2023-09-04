@@ -4,18 +4,18 @@
 }} />
 
 <script lang="ts">
-  import { onMount, createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import { fly } from 'svelte/transition';
-  import Button from './Button.svelte';
-  import Dialog from './Dialog.svelte';
-  import Search from './Search.svelte';
   import { clickOutside } from './click-outside';
   import type { BPMN } from './types/bpmn.interface';
   import type { BPMNService } from './types/bpmn.service';
 
   export let service: BPMNService;
+  export let buttonColor: 'primary' | 'secondary' = 'primary';
 
   const dispatch = createEventDispatcher();
+
+  let menuStyle;
 
   let items: BPMN[] = [];
   let loading: boolean;
@@ -50,6 +50,27 @@
   }
 
   function togglePopup(index: number) {
+    let rect = document.getElementById('togglePopup' + index).getBoundingClientRect()
+
+    const availableSpaceBelow = window.innerHeight - rect.bottom;
+    const dropdownHeight = 160;
+
+    let style: string = '';
+    if (availableSpaceBelow < dropdownHeight) {
+      style = `
+            min-width: ${rect.width}px;
+            bottom: ${window.innerHeight - rect.top}px;
+            left: ${rect.right}px;
+        `;
+    } else {
+      style = `
+            min-width: ${rect.width}px;
+            top: ${rect.bottom}px;
+            left: ${rect.right}px;
+        `;
+    }
+
+    menuStyle = style;
     popup = popup === index ? null : index;
   }
 
@@ -59,7 +80,7 @@
     items = [...items];
     popup = null;
   }
-  
+
   async function delVersion(id: string, version: number){
     versionDelLoading = true
     await service.deleteVersion(id, version)
@@ -121,226 +142,407 @@
 </script>
 
 <div class="layout">
-  <div class="header">
-    <div class="search-bar">
-      <Search />
-      <Button variant="outlined" on:click={() => (filters = true)}>Filters</Button>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-main">
+        <input type="search" placeholder="Search" class="search" />
+        <button class="button-outlined {buttonColor}" on:click={() => filters = true}>Filters</button>
+      </div>
+
+      <button class="button-filled {buttonColor}" on:click={openCreate}>
+        Add BPMN
+      </button>
     </div>
 
-    <Button on:click={openCreate}>Add BPMN</Button>
+    <div class="table-container">
+      <table>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Version</th>
+          <th>Actions</th>
+        </tr>
+
+        {#each items as item, index}
+          <tr>
+            <td>
+              {#if item.name}
+                {item.name}
+              {:else}
+                -
+              {/if}
+            </td>
+            <td>
+              {#if item.description}
+                {item.description}
+              {:else}
+                -
+              {/if}
+            </td>
+            <td>
+              {#if item.version}
+                {item.version}
+              {:else}
+                -
+              {/if}
+            </td>
+            <td class="actions-column">
+              <button
+                      class="actions-button"
+                      id="togglePopup{index}"
+                      on:click|stopPropagation={() => togglePopup(index)}
+              >
+                <span class="material-symbols-outlined">more_horiz</span>
+              </button>
+              {#if popup === index}
+                <div class="overlay">
+                  <div
+                          class="actions"
+                          style={menuStyle}
+                          transition:fly={{ y: -15, duration: 250 }}
+                          use:clickOutside
+                          on:click_outside={() => (popup = null)}>
+                    <button class="button-filled {buttonColor}" on:click={() => newVersion(item.id)}>New version</button>
+                    <button class="button-outlined {buttonColor}" on:click={() => dispatch('editVersion', {id: item.id, version: item.version})}>Edit</button>
+                    <button class="button-outlined {buttonColor}" class:loading={loadingVersions} on:click={() => {viewVersions(item.id, item.version)}}>Edit</button>
+                    <button class="button-outlined {buttonColor}" on:click={() => del(index, item)}>Delete</button>
+                  </div>
+                </div>
+              {/if}
+            </td>
+          </tr>
+        {/each}
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <button class="button-filled {buttonColor}" class:loading disabled="{!hasMore}">Load more</button>
+    </div>
   </div>
-
-  <table>
-    <tr>
-      <th>Name</th>
-      <th>Description</th>
-      <th>Version</th>
-      <th>Actions</th>
-    </tr>
-
-    {#each items as item, index}
-      <tr>
-        <td>
-          {#if item.name}
-            {item.name}
-          {:else}
-            -
-          {/if}
-        </td>
-        <td>
-          {#if item.description}
-            {item.description}
-          {:else}
-            -
-          {/if}
-        </td>
-        <td>
-          {#if item.version}
-            {item.version}
-          {:else}
-            -
-          {/if}
-        </td>
-        <td class="actions-column">
-          <button
-            class="actions-button"
-            on:click|stopPropagation={() => togglePopup(index)}
-          >
-            <span class="material-symbols-outlined">more_horiz</span>
-          </button>
-          {#if popup === index}
-            <div
-              class="actions"
-              transition:fly={{ y: -15, duration: 250 }}
-              use:clickOutside
-              on:click_outside={() => (popup = null)}
-            >
-              <Button on:click={() => newVersion(item.id)}>New version</Button>
-              <Button variant="outlined" on:click={() => dispatch('editVersion', {id: item.id, version: item.version})}>Edit</Button>
-              <Button variant="outlined" on:click={() => {viewVersions(item.id, item.version)}} loading={loadingVersions}>View versions</Button>
-              <Button variant="outlined" on:click={() => del(index, item)}>Delete</Button>
-            </div>
-          {/if}
-        </td>
-      </tr>
-    {/each}
-  </table>
-
-  {#if hasMore}
-    <div class="load-more">
-      <Button variant="outlined" {loading}>Load more</Button>
-    </div>
-  {/if}
 </div>
 
-<Dialog bind:showing={filters} on:submit={adjustFilters}>
-  <slot slot="header">Filters</slot>
+{#if filters}
+  <div class="dialog-overlay">
+    <form class="dialog" use:clickOutside={true} on:click_outside={() => (filters = false)} on:submit|preventDefault={adjustFilters}>
+      <div class="dialog-header">
+        <h2 class="dialog-header-title">Filters</h2>
 
-  <div class="dialog-grid">
-    <div class="dialog-grid-item half">
-      <label for="startDate">Start date</label>
-      <input type="date" id="startDate" />
-    </div>
+        <button
+                class="dialog-header-close"
+                on:click={() => (filters = false)}
+        >
+          <span class="material-symbols-outlined"> close </span>
+        </button>
+      </div>
 
-    <div class="dialog-grid-item half">
-      <label for="startDate">End date</label>
-      <input type="date" id="endDate" />
-    </div>
-
-
-    <div class="dialog-grid-item">
-      <label for="email">Email</label>
-      <input type="email" id="email" />
-    </div>
-
-
-    <div class="dialog-grid-item">
-      <label for="role">Role</label>
-      <select name="role" id="role">
-        <option value="" selected disabled>Select a role</option>
-        <option value="admin">Admin</option>
-        <option value="user">User</option>
-      </select>
-    </div>
-
-
-    <div class="dialog-grid-item">
-      <label for="active">Active</label>
-      <select name="active" id="active">
-        <option value="" selected disabled>Select active/inactive</option>
-        <option value="active">Active</option>
-        <option value="inactive">Inactive</option>
-      </select>
-    </div>
-
-    </div>
-
-  <slot slot="actions">
-    <Button type="submit">Apply</Button>
-  </slot>
-</Dialog>
-
-<Dialog bind:showing={newDialog} on:submit={create}>
-  <slot slot="header">Create New BPMN</slot>
-
-  <div class="dialog-grid">
-    <div class="dialog-grid-item">
-      <label for="name">Name</label>
-      <input id="name" bind:value={form.name} required />
-    </div>
-
-    <div class="dialog-grid-item">
-      <label for="description">Description</label>
-      <textarea id="description" rows="4" bind:value={form.description} />
-    </div>
-  </div>
-
-  <slot slot="actions">
-    <Button type="submit" loading={newLoading}>Apply</Button>
-  </slot>
-</Dialog>
-
-<Dialog bind:showing={versionsDialog}>
-  <slot slot="header">List of versions</slot>
-
-    <div class="dialog-grid">
-      {#each versionsObj.versions as version}
-        <div class="dialog-grid-item inline">
-          <span>Version: {version}</span>
-          <Button variant="outlined" on:click={() => dispatch('editVersion', {id: versionsObj.id, version: version})}>Edit</Button>
-          {#if version != versionsObj.version}
-            <Button loading={versionDelLoading} on:click={() => delVersion(versionsObj.id, version)}>Delete</Button>
-          {/if}
+      <div class="dialog-grid">
+        <div class="dialog-grid-item half">
+          <label for="startDate">Start date</label>
+          <input type="date" id="startDate" />
         </div>
-      {/each}
-    </div>
-</Dialog>
+
+        <div class="dialog-grid-item half">
+          <label for="startDate">End date</label>
+          <input type="date" id="endDate" />
+        </div>
+
+
+        <div class="dialog-grid-item">
+          <label for="email">Email</label>
+          <input type="email" id="email" />
+        </div>
+
+        <div class="dialog-grid-item">
+          <label for="role">Role</label>
+          <select name="role" id="role">
+            <option value="" selected disabled>Select a role</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+          </select>
+        </div>
+
+        <div class="dialog-grid-item">
+          <label for="active">Active</label>
+          <select name="active" id="active">
+            <option value="" selected disabled>Select active/inactive</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="dialog-actions">
+        <button class="button-filled {buttonColor}" type="submit">Apply</button>
+      </div>
+    </form>
+  </div>
+{/if}
+
+
+{#if newDialog}
+  <div class="dialog-overlay">
+    <form class="dialog" use:clickOutside={true} on:click_outside={() => (newDialog = false)} on:submit|preventDefault={create}>
+      <div class="dialog-header">
+        <h2 class="dialog-header-title">Create New BPMN</h2>
+
+        <button
+                class="dialog-header-close"
+                on:click={() => (newDialog = false)}
+        >
+          <span class="material-symbols-outlined"> close </span>
+        </button>
+      </div>
+
+      <div class="dialog-grid">
+        <div class="dialog-grid-item">
+          <label for="name">Name</label>
+          <input id="name" bind:value={form.name} required />
+        </div>
+
+        <div class="dialog-grid-item">
+          <label for="description">Description</label>
+          <textarea id="description" rows="4" bind:value={form.description} />
+        </div>
+      </div>
+
+      <div class="dialog-actions">
+        <button class="button-filled {buttonColor}" class:loading={newLoading} type="submit">Apply</button>
+      </div>
+    </form>
+  </div>
+{/if}
+
+{#if versionsDialog}
+  <div class="dialog-overlay">
+    <form class="dialog" use:clickOutside={true} on:click_outside={() => (newDialog = false)} on:submit|preventDefault={create}>
+      <div class="dialog-header">
+        <h2 class="dialog-header-title">List of versions</h2>
+
+        <button
+                class="dialog-header-close"
+                on:click={() => (newDialog = false)}
+        >
+          <span class="material-symbols-outlined"> close </span>
+        </button>
+      </div>
+
+      <div class="dialog-grid">
+        {#each versionsObj.versions as version}
+          <div class="dialog-grid-item inline">
+            <span>Version: {version}</span>
+            <button class="button-outlined {buttonColor}" on:click={() => dispatch('editVersion', {id: versionsObj.id, version: version})}>Edit</button>
+
+            {#if version != versionsObj.version}
+              <button class="button-filled {buttonColor}" class:loading={versionDelLoading} on:click={() => delVersion(versionsObj.id, version)}>Delete</button>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    </form>
+  </div>
+{/if}
 
 <style>
-  * {
+  *, *::before, *::after {
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
   }
 
   .layout {
-    padding: 1rem;
+    padding: 1.5rem;
   }
 
-  .header {
+
+
+  /*Card */
+  .card {
+    background-color: var(--background-primary);
+    border: 1px solid var(--border-primary);
+    -webkit-border-radius: .5rem;
+    -moz-border-radius: .5rem;
+    border-radius: .5rem;
+    overflow: hidden;
+    max-width: 72rem;
+    margin: 0 auto;
+  }
+
+  .card-header {
     display: -webkit-box;
     display: -webkit-flex;
     display: -moz-box;
     display: -ms-flexbox;
     display: flex;
-  }
-
-  .search-bar {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: -moz-box;
-    display: -ms-flexbox;
-    display: flex;
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    -moz-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
     gap: 1rem;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-primary);
+    background-color: var(--background-quaternary);
+  }
+
+  .card-header-main {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  input, textarea, select {
+    border: 2px solid var(--border-primary);
+    padding: 0 .75rem;
+    -webkit-border-radius: .25rem;
+    -moz-border-radius: .25rem;
+    border-radius: .25rem;
     -webkit-box-flex: 1;
     -webkit-flex: 1 1 0;
     -moz-box-flex: 1;
     -ms-flex: 1 1 0px;
     flex: 1 1 0;
+    min-height: 2.5rem;
+  }
+
+  .card-header-main .search:not(:focus):hover {
+    border-color: var(--secondary-color);
   }
 
 
+
+  /* Table */
+  .table-container {
+    overflow-x: auto;
+    width: 100%;
+  }
 
   table {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 .5rem;
   }
 
-  table tr th,
-  table tr td {
-    border-top: 2px solid var(--border-primary);
-    border-bottom: 2px solid var(--border-primary);
-    text-align: center;
-    padding: 1rem;
+  th, td {
+    white-space: nowrap;
+    font-size: .75rem;
+    font-weight: normal;
+    padding: .5rem;
+    height: 48px;
+    border-bottom: 1px solid rgba(0,0,0,.16);
   }
-  table tr th:first-child,
-  table tr td:first-child {
+
+  th {
+    opacity: .75;
+  }
+
+  th:first-child, td:first-child {
     text-align: left;
-    border-left: 2px solid var(--border-primary);
   }
 
-  table tr th:last-child,
-  table tr td:last-child {
+  th:not(:first-child):not(:last-child), td:not(:first-child):not(:last-child) {
+    text-align: center;
+  }
+
+  th:last-child, td:last-child {
     text-align: right;
-    border-right: 2px solid var(--border-primary);
   }
 
   .actions-column {
     position: relative;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: end;
+    -webkit-justify-content: flex-end;
+    -moz-box-pack: end;
+    -ms-flex-pack: end;
+    justify-content: flex-end;
   }
 
   .actions-button {
+    min-width: 32px;
+    max-width: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    padding: 0;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    border-radius: 50%;
+    -webkit-transition: .3s;
+    -o-transition: .3s;
+    -moz-transition: .3s;
+    transition: .3s;
+  }
+
+  .actions-button:hover {
+    background-color: var(--primary-color);
+    color: var(--text-on-primary);
+  }
+
+  .table-footer {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+
+  .overlay {
+    z-index: 100;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .actions {
+    position: fixed;
+    -webkit-transform: translateX(-100%);
+    -moz-transform: translateX(-100%);
+    -ms-transform: translateX(-100%);
+    -o-transform: translateX(-100%);
+    transform: translateX(-100%);
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -moz-box-orient: vertical;
+    -moz-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    gap: .5rem;
+    background-color: var(--background-primary);
+    border: 1px solid var(--border-primary);
+    padding: .75rem;
+    -webkit-border-radius: .25rem;
+    -moz-border-radius: .25rem;
+    border-radius: .25rem;
+  }
+
+
+
+  /* Buttons */
+  button {
+    position: relative;
     display: -webkit-box;
     display: -webkit-flex;
     display: -moz-box;
@@ -356,56 +558,154 @@
     -moz-box-pack: center;
     -ms-flex-pack: center;
     justify-content: center;
-    margin-left: auto;
+    height: 2.5rem;
+    -webkit-border-radius: .25rem;
+    -moz-border-radius: .25rem;
+    border-radius: .25rem;
+    text-align: center;
+    min-width: 4rem;
+    padding: 0 1rem;
+    font-weight: bold;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
     cursor: pointer;
   }
 
-  .actions {
-    z-index: 10;
+  button:disabled {
+    pointer-events: none;
+    opacity: .5;
+  }
+
+  button.button-outlined {
+    border-width: 2px;
+    border-style: solid;
+  }
+
+  button.button-outlined:hover {
+    background-color: var(--background-tertiary);
+  }
+
+  button.button-outlined.primary {
+    border-color: var(--primary-color);
+  }
+
+  button.button-outlined.secondary {
+    border-color: var(--secondary-color);
+  }
+
+  button.button-filled:hover {
+    opacity: .75;
+  }
+
+  button.button-filled.primary {
+    background-color: var(--primary-color);
+    color: var(--text-on-primary);
+  }
+
+  button.button-filled.secondary {
+    background-color: var(--secondary-color);
+    color: var(--text-on-secondary);
+  }
+
+  button.loading {
+    opacity: .75;
+    pointer-events: none;
+  }
+
+  button.loading::before {
+    content: '';
     position: absolute;
-    top: 100%;
-    right: 0;
-    -webkit-box-shadow: 0 0 12px rgba(0,0,0,.16);
-    -moz-box-shadow: 0 0 12px rgba(0,0,0,.16);
-    box-shadow: 0 0 12px rgba(0,0,0,.16);
-    background-color: var(--background-primary);
-    padding: 1rem;
-    -webkit-border-radius: .25rem;
-    -moz-border-radius: .25rem;
-    border-radius: .25rem;
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: -moz-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-    -webkit-flex-direction: column;
-    -moz-box-orient: vertical;
-    -moz-box-direction: normal;
-    -ms-flex-direction: column;
-    flex-direction: column;
-    gap: 1rem;
-    min-width: 10rem;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--primary-color);
   }
 
-  label {
-    font-size: .75rem;
-    font-weight: bold;
+  button.loading::after {
+    content: '';
+    position: absolute;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    width: 1.5rem;
+    height: 1.5rem;
+    border-top: 2px solid var(--text-on-primary);
+    border-bottom: 2px solid var(--text-on-primary);
+    border-left: 1px solid transparent;
+    border-right: 1px solid transparent;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    border-radius: 50%;
+    -webkit-animation: spin 1.2s linear infinite;
+    -moz-animation: spin 1.2s linear infinite;
+    -o-animation: spin 1.2s linear infinite;
+    animation: spin 1.2s linear infinite;
   }
 
-  input,
-  select,
-  textarea {
-    border: 2px solid var(--border-primary);
-    -webkit-border-radius: .25rem;
-    -moz-border-radius: .25rem;
-    border-radius: .25rem;
-    padding: .25rem .5rem;
-    font-size: .875rem;
+  @-webkit-keyframes spin {
+    0% {
+      -webkit-transform: rotate(0deg);
+      transform: rotate(0deg);
+    }
+    100% {
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
   }
 
-  .load-more {
+  @-moz-keyframes spin {
+    0% {
+      -moz-transform: rotate(0deg);
+      transform: rotate(0deg);
+    }
+    100% {
+      -moz-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+
+  @-o-keyframes spin {
+    0% {
+      -o-transform: rotate(0deg);
+      transform: rotate(0deg);
+    }
+    100% {
+      -o-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes spin {
+    0% {
+      -webkit-transform: rotate(0deg);
+      -moz-transform: rotate(0deg);
+      -o-transform: rotate(0deg);
+      transform: rotate(0deg);
+    }
+    100% {
+      -webkit-transform: rotate(360deg);
+      -moz-transform: rotate(360deg);
+      -o-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+
+
+
+  /* Dialog */
+  .dialog-overlay {
+    z-index: 20;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,.25);
     display: -webkit-box;
     display: -webkit-flex;
     display: -moz-box;
@@ -416,6 +716,94 @@
     -moz-box-pack: center;
     -ms-flex-pack: center;
     justify-content: center;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+  }
+
+  .dialog {
+    background-color: var(--background-primary);
+    -webkit-border-radius: .25rem;
+    -moz-border-radius: .25rem;
+    border-radius: .25rem;
+  }
+
+  .dialog-header {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    -moz-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-primary);
+  }
+
+  .dialog-header-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  .dialog-header-close {
+    min-width: 2rem;
+    max-width: 2rem;
+    min-height: 2rem;
+    max-height: 2rem;
+    padding: 0;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -moz-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    border-radius: 50%;
+    -webkit-transition: background-color .3s;
+    -o-transition: background-color .3s;
+    -moz-transition: background-color .3s;
+    transition: background-color .3s;
+  }
+
+  .dialog-header-close:hover {
+    background-color: var(--background-tertiary);
+  }
+
+  .dialog-actions {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-top: 1px solid var(--border-primary);
   }
 
   .dialog-grid {
@@ -455,6 +843,11 @@
     -moz-box-align: center;
     -ms-flex-align: center;
     align-items: center;
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    -moz-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
     gap: .5rem;
   }
 
