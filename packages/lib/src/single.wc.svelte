@@ -12,7 +12,6 @@
   import type { BPMN } from './types/bpmn.interface';
   import { loadBpmn } from './load-bpmn';
   import type { BPMNTrigger } from './types/bpmn-trigger.interface';
-  import App from '../../demo/src/App.svelte';
 
   const dispatch = createEventDispatcher();
 
