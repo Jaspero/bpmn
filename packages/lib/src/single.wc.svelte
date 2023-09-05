@@ -53,13 +53,15 @@
       });
     }
 
-    const version_changes = Object.keys(versionInstance).filter(el => versionInstance[el] != versionInstanceBackup[el]).reduce((a, c) => {
+    const version_changes : any = Object.keys(versionInstance).filter(el => versionInstance[el] != versionInstanceBackup[el]).reduce((a, c) => {
       return {...a, [c]: versionInstance[c]}
     }, {})
 
     if(versionInstance.xml != xml) {
       version_changes['xml'] = xml
     }
+
+    version_changes['active'] = versionInstance.active // makes sure active is sent
 
     await service.updateVersion(id, version, {...version_changes})
 
