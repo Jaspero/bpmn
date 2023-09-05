@@ -12,6 +12,7 @@
   import type { BPMN } from './types/bpmn.interface';
   import { loadBpmn } from './load-bpmn';
   import type { BPMNTrigger } from './types/bpmn-trigger.interface';
+  import App from '../../demo/src/App.svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -53,30 +54,16 @@
       });
     }
 
-    if (
-      (
-        selectedTrigger &&
-        selectedTriggerVersion &&
-        versionInstance.trigger != versionInstanceBackup.trigger
-      ) ||
-      versionInstance.triggerCondition != versionInstanceBackup.triggerCondition
-    ) {
-      await service.updateVersion(id, version, {
-        ...(versionInstance.xml != xml && {xml}),
-        trigger: versionInstance.trigger,
-        triggerCondition: versionInstance.triggerCondition,
-        active: versionInstance.active
-      });
-    } else if (versionInstance.xml != xml) {
-      await service.updateVersion(id, version, {
-        xml,
-        ...(versionInstance.active != versionInstanceBackup.active && {active: versionInstance.active})
-      });
-    } else if (versionInstance.active != versionInstanceBackup.active) {
-      await service.updateVersion(id, version, {
-        active: versionInstance.active
-      });
+    const version_changes = Object.keys(versionInstance).filter(el => versionInstance[el] != versionInstanceBackup[el]).reduce((a, c) => {
+      return {...a, [c]: versionInstance[c]}
+    }, {})
+
+    if(versionInstance.xml != xml) {
+      version_changes['xml'] = xml
     }
+
+    await service.updateVersion(id, version, {...version_changes})
+
     saveLoading = false;
 
     dispatch('saved');
