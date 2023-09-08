@@ -7,12 +7,14 @@
 
 <script lang="ts">
   import Button from './Button.svelte';
+  import RestForm from './RestForm.svelte';
   import { onMount, createEventDispatcher } from 'svelte';
   import type { BPMNService } from './types/bpmn.service';
   import type { BPMNVersion } from './types/bpmn-version.interface';
   import type { BPMN } from './types/bpmn.interface';
   import { loadBpmn } from './load-bpmn';
   import type { BPMNTrigger } from './types/bpmn-trigger.interface';
+  import { random } from '@jaspero/utils'
 
   const dispatch = createEventDispatcher();
 
@@ -26,7 +28,18 @@
   let selectedTask: string | null = null;
   let selectedService;
 
+  let restForm = {
+    method: 'GET',
+    url: '',
+    headers: [{name: '', value: ''}],
+  }
+
   let modeler: any;
+  let elementFactory: any;
+  let elementRegistry: any;
+  let modeling: any;
+  let moddle: any;
+
   let instance: BPMN;
   let instanceBackup: BPMN;
   let versionInstance: BPMNVersion;
@@ -71,8 +84,18 @@
     dispatch('saved');
   }
   
-  function handleServiceSelection(){
-
+  function handleServiceChange(){
+    let newId;
+    if(selectedTask == 'None') {
+      newId = random.string(24)
+    } else {
+      newId = random.string(24) + '#payload:' + btoa(JSON.stringify({service: selectedService, config: {...restForm}}))
+    }
+    modeling.updateProperties(elementRegistry.get(selectedTask), {
+      id: newId
+    })
+    selectedTask = newId
+    // console.log(JSON.parse(atob(selectedTask.split('#payload:')[1])))
   }
 
   onMount(async () => {
@@ -102,16 +125,19 @@
       }
     });
 
+    elementFactory = modeler.get('elementFactory')
+    elementRegistry = modeler.get('elementRegistry')
+    modeling = modeler.get('modeling')
+    moddle = modeler.get('moddle')
+
     const eventBus = modeler.get('eventBus')
 
     eventBus.on('element.click', (e) => {
-      console.log(e)
       if(e.element.type == 'bpmn:Task' && e.gfx.classList.contains('selected')){
         selectedTask = e.element.id
       } else {
         selectedTask = null
       }
-      console.log(selectedTask)
     })
 
     // TODO: Handle warnings and errors
@@ -176,11 +202,14 @@
             <div class="details-grid">
               <div class="field-container">
                 <label for="service">Service</label>
-                <select id="service" bind:value={selectedService} on:change={handleServiceSelection}  required>
-                  {#each ['None', 'firestore', 'stripe'] as service}
+                <select id="service" bind:value={selectedService} on:change={() => handleServiceChange()} required>
+                  {#each ['None', 'http'] as service}
                     <option value={service}>{service}</option>
                   {/each}
                 </select>
+                {#if selectedService == 'http'}
+                  <RestForm bind:fields={restForm} on:change={() => handleServiceChange()}></RestForm>
+                {/if}
               </div>
           </details>
         {/if}
@@ -198,7 +227,7 @@
               </select>
               {#if selectedTrigger}
                 <select id="trigger-version" bind:value={selectedTriggerVersion}>
-                  <option value="">Select Trigger</option>
+                  <option value="">Select Version</option>
                   {#each triggerVersions[selectedTrigger] as version}
                     <option value={version}>{version}</option>
                   {/each}
