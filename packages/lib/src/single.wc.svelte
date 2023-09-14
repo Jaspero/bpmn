@@ -6,12 +6,15 @@
 />
 
 <script lang="ts">
+  import Button from './Button.svelte';
+  import RestForm from './RestForm.svelte';
   import { onMount, createEventDispatcher } from 'svelte';
   import type { BPMNService } from './types/bpmn.service';
   import type { BPMNVersion } from './types/bpmn-version.interface';
   import type { BPMN } from './types/bpmn.interface';
   import { loadBpmn } from './load-bpmn';
   import type { BPMNTrigger } from './types/bpmn-trigger.interface';
+  import { random } from '@jaspero/utils'
 
   const dispatch = createEventDispatcher();
 
@@ -23,7 +26,21 @@
   let loading = true;
   let sidebar = false;
 
+  let selectedTask: string | null = null;
+  let selectedService;
+
+  let restForm = {
+    method: 'GET',
+    url: '',
+    headers: [{name: '', value: ''}],
+  }
+
   let modeler: any;
+  let elementFactory: any;
+  let elementRegistry: any;
+  let modeling: any;
+  let moddle: any;
+
   let instance: BPMN;
   let instanceBackup: BPMN;
   let versionInstance: BPMNVersion;
@@ -69,6 +86,30 @@
 
     dispatch('saved');
   }
+  
+  function handleServiceChange(){
+    let el = elementRegistry.get(selectedTask)
+    let newId;
+    const replace = modeler.get('replace')
+    if(selectedService == 'None') {
+      if(el.type == 'bpmn:ServiceTask'){
+        el = replace.replaceElement(el, {type: 'bpmn:Task'})
+      }
+      newId = random.string(24)
+    } else {
+      if(el.type == 'bpmn:Task'){
+        el = replace.replaceElement(el, {type: 'bpmn:ServiceTask'})
+        modeling.updateProperties(el, {
+          implementation: "\${environment.services.defaultServiceRun()}"
+        })
+      }
+      newId = 'jpservice' + random.string(24) + 'jphttp' + btoa(JSON.stringify({service: selectedService, config: {...restForm}}))
+    }
+    modeling.updateProperties(el, {
+      id: newId
+    })
+    selectedTask = newId
+  }
 
   onMount(async () => {
     await loadBpmn();
@@ -97,6 +138,37 @@
         bindTo: window
       }
     });
+
+    elementFactory = modeler.get('elementFactory')
+    elementRegistry = modeler.get('elementRegistry')
+    modeling = modeler.get('modeling')
+    moddle = modeler.get('moddle')
+
+    const eventBus = modeler.get('eventBus')
+
+    eventBus.on('element.click', (e) => {
+      if(e.gfx.classList.contains('selected')){
+        if(e.element.type == 'bpmn:Task'){
+          selectedService = 'None'
+          restForm = {
+            method: 'GET',
+            url: '',
+            headers: [{name: '', value: ''}],
+          }
+          selectedTask = e.element.id
+        }
+        else if(e.element.type == 'bpmn:ServiceTask'){
+          const {service, config} = JSON.parse(atob(e.element.id.split('jphttp')[1]))
+          selectedService = service
+          restForm = {...config}
+          selectedTask = e.element.id
+        } else {
+          selectedTask = null
+        }
+      } else {
+        selectedTask = null
+      }
+    })
 
     // TODO: Handle warnings and errors
     const { warnings } = await modeler.importXML(versionInstance.xml);
@@ -167,6 +239,24 @@
           </div>
         </details>
 
+        {#if selectedTask}
+          <details>
+            <summary>Services</summary>
+            <div class="details-grid">
+              <div class="field-container">
+                <label for="service">Service</label>
+                <select id="service" bind:value={selectedService} on:change={() => handleServiceChange()} required>
+                  {#each ['None', 'http'] as service}
+                    <option value={service}>{service}</option>
+                  {/each}
+                </select>
+                {#if selectedService == 'http'}
+                  <RestForm bind:fields={restForm} on:change={() => handleServiceChange()}></RestForm>
+                {/if}
+              </div>
+          </details>
+        {/if}
+
         <details>
           <summary>Trigger</summary>
           <div class="details-grid">
@@ -180,7 +270,7 @@
               </select>
               {#if selectedTrigger}
                 <select id="trigger-version" bind:value={selectedTriggerVersion}>
-                  <option value="">Select Trigger</option>
+                  <option value="">Select Version</option>
                   {#each triggerVersions[selectedTrigger] as version}
                     <option value={version}>{version}</option>
                   {/each}
