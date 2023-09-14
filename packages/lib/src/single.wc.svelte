@@ -15,6 +15,7 @@
   import { loadBpmn } from './load-bpmn';
   import type { BPMNTrigger } from './types/bpmn-trigger.interface';
   import { random } from '@jaspero/utils'
+  import base32 from 'base32'
 
   const dispatch = createEventDispatcher();
 
@@ -103,7 +104,7 @@
           implementation: "\${environment.services.defaultServiceRun()}"
         })
       }
-      newId = 'jpservice' + random.string(24) + 'jphttp' + btoa(JSON.stringify({service: selectedService, config: {...restForm}}))
+      newId = 'jpservice' + random.string(24) + 'jphttp' + base32.encode(JSON.stringify({service: selectedService, config: {...restForm}}))
     }
     modeling.updateProperties(el, {
       id: newId
@@ -158,7 +159,7 @@
           selectedTask = e.element.id
         }
         else if(e.element.type == 'bpmn:ServiceTask'){
-          const {service, config} = JSON.parse(atob(e.element.id.split('jphttp')[1]))
+          const {service, config} = JSON.parse(base32.decode(e.element.id.split('jphttp')[1]))
           selectedService = service
           restForm = {...config}
           selectedTask = e.element.id
