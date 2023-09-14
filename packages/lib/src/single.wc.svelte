@@ -21,6 +21,7 @@
   export let service: BPMNService;
   export let id: string;
   export let version: number;
+  export let buttonColor: 'primary'|'secondary' = 'primary'
 
   let loading = true;
   let sidebar = false;
@@ -52,34 +53,36 @@
 
   let saveLoading = false;
 
-  $: if (versionInstance) versionInstance.trigger = `${selectedTrigger}-v${selectedTriggerVersion}`;
+  $: if (versionInstance) {
+    versionInstance.trigger = `${selectedTrigger}-v${selectedTriggerVersion}`;
+  }
 
   async function save() {
-    saveLoading = true
+    saveLoading = true;
     const { xml } = await modeler.saveXML({ format: true });
 
     const changes = Object.keys(instance).some((key) => instance[key] !== instanceBackup[key]);
 
-    if(changes){
+    if (changes) {
       await service.update(id, {
         name: instance.name,
         description: instance.description
       });
     }
 
-    if(selectedTrigger && selectedTriggerVersion && (versionInstance.trigger != versionInstanceBackup.trigger) || (versionInstance.triggerCondition != versionInstanceBackup.triggerCondition)){
-      await service.updateVersion(id, version, {
-        xml: xml,
-        trigger: versionInstance.trigger,
-        triggerCondition: versionInstance.triggerCondition
-      });
-    } else if (versionInstance.xml != xml) {
-      await service.updateVersion(id, version, {
-        xml: xml
-      });
+    const version_changes : any = Object.keys(versionInstance).filter(el => versionInstance[el] != versionInstanceBackup[el]).reduce((a, c) => {
+      return {...a, [c]: versionInstance[c]}
+    }, {})
+
+    if(versionInstance.xml != xml) {
+      version_changes['xml'] = xml
     }
 
-    saveLoading = false
+    version_changes['active'] = versionInstance.active // makes sure active is sent
+
+    await service.updateVersion(id, version, {...version_changes})
+
+    saveLoading = false;
 
     dispatch('saved');
   }
@@ -125,6 +128,7 @@
     if (versionInstance.trigger) {
       selectedTrigger = versionInstance.trigger.split('-v')[0];
       selectedTriggerVersion = versionInstance.trigger.split('-v')[1];
+
     }
 
     // @ts-ignore
@@ -182,27 +186,36 @@
 
 <div id="layout" class="layout">
   <nav class="navigation">
-    <Button variant="outlined" on:click={() => dispatch('back')}>Back</Button>
-    <Button on:click={save} loading={saveLoading}>Save</Button>
+    <button class="button button-outlined {buttonColor}" on:click={() => dispatch('back')}>Back</button>
+    <button class="button button-filled {buttonColor}" class:loading={saveLoading} on:click={save}>
+      {#if !saveLoading}
+        Save
+      {:else}
+        <span class="loading-spinner"></span>
+        Loading...
+      {/if}
+    </button>
   </nav>
 
   <div class="canvas-container">
     <div id="canvas" class="canvas" />
 
     {#if instance && versionInstance}
-      <div class="sidebar" class:open={sidebar}>
-        <button class="sidebar-toggle" on:click={() => (sidebar = !sidebar)}>
-          <span class="sidebar-toggle-label"> Details </span>
-          <span class="sidebar-toggle-icon material-symbols-outlined"> menu </span>
-        </button>
+      <button class="sidebar-toggle"
+              class:active={sidebar}
+              on:click={() => (sidebar = !sidebar)}>
+        <span class="sidebar-toggle-label"> Details </span>
+        <span class="sidebar-toggle-icon material-symbols-outlined"> menu </span>
+      </button>
 
+      <div class="sidebar" class:open={sidebar}>
         <div class="sidebar-header">
           <span class="material-symbols-outlined sidebar-header-icon">
             check_box_outline_blank
           </span>
 
           <div>
-            <h2 class="sidebar-header-title">DMN</h2>
+            <h2 class="sidebar-header-title">BPMN</h2>
             <p class="sidebar-header-subtitle">Settings</p>
           </div>
         </div>
@@ -219,6 +232,10 @@
               <label for="description">Description</label>
               <textarea id="description" rows="4" bind:value={instance.description} />
             </div>
+
+            <label>
+              <input type="checkbox" bind:checked={versionInstance.active} /> Active
+            </label>
           </div>
         </details>
 
@@ -263,7 +280,11 @@
 
             <div class="field-container">
               <label for="triggerCondition">Trigger Condition</label>
-              <textarea id="triggerCondition" rows="4" bind:value={versionInstance.triggerCondition} />
+              <textarea
+                id="triggerCondition"
+                rows="4"
+                bind:value={versionInstance.triggerCondition}
+              />
             </div>
           </div>
         </details>
@@ -338,9 +359,9 @@
   }
 
   .sidebar {
-    position: relative;
     border-left: 2px solid var(--border-primary);
     white-space: nowrap;
+    overflow: hidden;
   }
 
   .sidebar:not(.open) {
@@ -364,9 +385,9 @@
     align-items: center;
     width: 100%;
     height: 3.5rem;
-    background-color: rgba(0, 0, 0, 0.02);
-    padding: 0 0.5rem;
-    gap: 0.5rem;
+    background-color: rgba(0,0,0,.02);
+    padding: 0 .5rem;
+    gap: .5rem;
     border-bottom: 2px solid var(--border-primary);
   }
 
@@ -376,7 +397,7 @@
 
   .sidebar-header-title {
     text-transform: uppercase;
-    font-size: 0.75rem;
+    font-size: .75rem;
     line-height: 1rem;
     font-weight: bold;
     overflow: hidden;
@@ -386,7 +407,7 @@
   }
 
   .sidebar-header-subtitle {
-    font-size: 0.75rem;
+    font-size: .75rem;
     line-height: 1rem;
     overflow: hidden;
     -o-text-overflow: ellipsis;
@@ -397,12 +418,12 @@
   .sidebar-toggle {
     position: absolute;
     top: 50%;
-    right: 100%;
-    -webkit-transform: translate(44px, -50%) rotate(-90deg);
-    -moz-transform: translate(44px, -50%) rotate(-90deg);
-    -ms-transform: translate(44px, -50%) rotate(-90deg);
-    -o-transform: translate(44px, -50%) rotate(-90deg);
-    transform: translate(44px, -50%) rotate(-90deg);
+    right: -44px;
+    -webkit-transform: translateY(-50%) rotate(-90deg);
+    -moz-transform: translateY(-50%) rotate(-90deg);
+    -ms-transform: translateY(-50%) rotate(-90deg);
+    -o-transform: translateY(-50%) rotate(-90deg);
+    transform: translateY(-50%) rotate(-90deg);
     width: 128px;
     border-top: 2px solid var(--border-primary);
     border-left: 2px solid var(--border-primary);
@@ -417,14 +438,20 @@
     -moz-box-align: center;
     -ms-flex-align: center;
     align-items: center;
-    padding: 0 0.25rem;
-    -webkit-border-top-left-radius: 0.25rem;
-    -moz-border-radius-topleft: 0.25rem;
-    border-top-left-radius: 0.25rem;
-    -webkit-border-top-right-radius: 0.25rem;
-    -moz-border-radius-topright: 0.25rem;
-    border-top-right-radius: 0.25rem;
+    padding: 0 .25rem;
+    -webkit-border-top-left-radius: .25rem;
+    -moz-border-radius-topleft: .25rem;
+    border-top-left-radius: .25rem;
+    -webkit-border-top-right-radius: .25rem;
+    -moz-border-radius-topright: .25rem;
+    border-top-right-radius: .25rem;
     background-color: var(--background-primary);
+  }
+
+  .sidebar-toggle.active {
+    right: -webkit-calc(16rem - 46px);
+    right: -moz-calc(16rem - 46px);
+    right: calc(16rem - 46px)
   }
 
   .sidebar-toggle:hover {
@@ -442,19 +469,19 @@
     -o-transform: rotate(90deg);
     transform: rotate(90deg);
     border-bottom: 2px solid var(--border-primary);
-    padding: 0.25rem;
+    padding: .25rem;
   }
 
   details {
-    padding: 0.5rem;
+    padding: .5rem;
     border-bottom: 2px solid var(--border-primary);
     cursor: pointer;
   }
 
   summary {
-    margin: -0.5rem;
-    padding: 0.5rem;
-    font-size: 0.875rem;
+    margin: -.5rem;
+    padding: .5rem;
+    font-size: .875rem;
   }
 
   summary:hover {
@@ -474,7 +501,7 @@
     -moz-box-direction: normal;
     -ms-flex-direction: column;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: .5rem;
     margin-top: 1rem;
   }
 
@@ -491,23 +518,23 @@
     -moz-box-direction: normal;
     -ms-flex-direction: column;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: .25rem;
   }
 
   label {
-    font-size: 0.75rem;
+    font-size: .75rem;
     font-weight: bold;
   }
 
   input,
-  select,
-  textarea {
+  textarea,
+  select {
     border: 2px solid var(--border-primary);
-    -webkit-border-radius: 0.25rem;
-    -moz-border-radius: 0.25rem;
-    border-radius: 0.25rem;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
+    -webkit-border-radius: .25rem;
+    -moz-border-radius: .25rem;
+    border-radius: .25rem;
+    padding: .25rem .5rem;
+    font-size: .875rem;
   }
 
   .loading-overlay {
@@ -571,6 +598,128 @@
 
   @keyframes spin {
     to {
+      -webkit-transform: rotate(360deg);
+      -moz-transform: rotate(360deg);
+      -o-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Buttons */
+  .button {
+    position: relative;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -moz-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    height: 2.5rem;
+    -webkit-border-radius: .25rem;
+    -moz-border-radius: .25rem;
+    border-radius: .25rem;
+    text-align: center;
+    min-width: 4rem;
+    padding: 0 1rem;
+    font-weight: bold;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: pointer;
+  }
+
+  .button:disabled {
+    pointer-events: none;
+    opacity: .5;
+  }
+
+  .button.button-outlined {
+    border-width: 2px;
+    border-style: solid;
+  }
+
+  .button.button-outlined:hover {
+    background-color: var(--background-tertiary);
+  }
+
+  .button.button-outlined.primary {
+    border-color: var(--primary-color);
+  }
+
+  .button.button-outlined.secondary {
+    border-color: var(--secondary-color);
+  }
+
+  .button.button-filled:hover {
+    opacity: .75;
+  }
+
+  .button.button-filled.primary {
+    background-color: var(--primary-color);
+    color: var(--text-on-primary);
+  }
+
+  .button.button-filled.secondary {
+    background-color: var(--secondary-color);
+    color: var(--text-on-secondary);
+  }
+
+  .button.loading {
+    opacity: .75;
+    pointer-events: none;
+  }
+
+  .button.loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--primary-color);
+  }
+
+  .button.loading::after {
+    content: '';
+    position: absolute;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    width: 1.5rem;
+    height: 1.5rem;
+    border-top: 2px solid var(--text-on-primary);
+    border-bottom: 2px solid var(--text-on-primary);
+    border-left: 1px solid transparent;
+    border-right: 1px solid transparent;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    border-radius: 50%;
+    -webkit-animation: spin 1.2s linear infinite;
+    -moz-animation: spin 1.2s linear infinite;
+    -o-animation: spin 1.2s linear infinite;
+    animation: spin 1.2s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      -webkit-transform: rotate(0deg);
+      -moz-transform: rotate(0deg);
+      -o-transform: rotate(0deg);
+      transform: rotate(0deg);
+    }
+    100% {
       -webkit-transform: rotate(360deg);
       -moz-transform: rotate(360deg);
       -o-transform: rotate(360deg);
