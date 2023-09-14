@@ -85,17 +85,24 @@
   }
   
   function handleServiceChange(){
+    let el = elementRegistry.get(selectedTask)
     let newId;
-    if(selectedTask == 'None') {
+    const replace = modeler.get('replace')
+    if(selectedService == 'None') {
+      if(el.type == 'bpmn:ServiceTask'){
+        el = replace.replaceElement(el, {type: 'bpmn:Task'})
+      }
       newId = random.string(24)
     } else {
-      newId = random.string(24) + '#payload:' + btoa(JSON.stringify({service: selectedService, config: {...restForm}}))
+      if(el.type == 'bpmn:Task'){
+        el = replace.replaceElement(el, {type: 'bpmn:ServiceTask'})
+      }
+      newId = 'jp-' + random.string(24) + '#http:' + btoa(JSON.stringify({service: selectedService, config: {...restForm}}))
     }
-    modeling.updateProperties(elementRegistry.get(selectedTask), {
+    modeling.updateProperties(el, {
       id: newId
     })
     selectedTask = newId
-    // console.log(JSON.parse(atob(selectedTask.split('#payload:')[1])))
   }
 
   onMount(async () => {
@@ -133,8 +140,24 @@
     const eventBus = modeler.get('eventBus')
 
     eventBus.on('element.click', (e) => {
-      if(e.element.type == 'bpmn:Task' && e.gfx.classList.contains('selected')){
-        selectedTask = e.element.id
+      if(e.gfx.classList.contains('selected')){
+        if(e.element.type == 'bpmn:Task'){
+          selectedService = 'None'
+          restForm = {
+            method: 'GET',
+            url: '',
+            headers: [{name: '', value: ''}],
+          }
+          selectedTask = e.element.id
+        }
+        else if(e.element.type == 'bpmn:ServiceTask'){
+          const {service, config} = JSON.parse(atob(e.element.id.split('#http:')[1]))
+          selectedService = service
+          restForm = {...config}
+          selectedTask = e.element.id
+        } else {
+          selectedTask = null
+        }
       } else {
         selectedTask = null
       }
