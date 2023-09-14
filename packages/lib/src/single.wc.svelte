@@ -96,6 +96,9 @@
     } else {
       if(el.type == 'bpmn:Task'){
         el = replace.replaceElement(el, {type: 'bpmn:ServiceTask'})
+        modeling.updateProperties(el, {
+          implementation: "\${environment.services.defaultServiceRun()}"
+        })
       }
       newId = 'jpservice' + random.string(24) + 'jphttp' + btoa(JSON.stringify({service: selectedService, config: {...restForm}}))
     }
