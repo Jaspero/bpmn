@@ -97,7 +97,7 @@
       if(el.type == 'bpmn:Task'){
         el = replace.replaceElement(el, {type: 'bpmn:ServiceTask'})
       }
-      newId = 'jp-' + random.string(24) + '#http:' + btoa(JSON.stringify({service: selectedService, config: {...restForm}}))
+      newId = 'jpservice' + random.string(24) + 'jphttp' + btoa(JSON.stringify({service: selectedService, config: {...restForm}}))
     }
     modeling.updateProperties(el, {
       id: newId
@@ -151,7 +151,7 @@
           selectedTask = e.element.id
         }
         else if(e.element.type == 'bpmn:ServiceTask'){
-          const {service, config} = JSON.parse(atob(e.element.id.split('#http:')[1]))
+          const {service, config} = JSON.parse(atob(e.element.id.split('jphttp')[1]))
           selectedService = service
           restForm = {...config}
           selectedTask = e.element.id
