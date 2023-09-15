@@ -28,7 +28,7 @@ const mockVersion = [
 			<collaboration id="sid-c0e745ff-361e-4afb-8c8d-2a1fc32b1424">
 				<participant id="sid-87F4C1D6-25E1-4A45-9DA7-AD945993D06F" name="Customer" processRef="sid-C3803939-0872-457F-8336-EAE484DC4A04" />
 			</collaboration>
-			<process id="sid-C3803939-0872-457F-8336-EAE484DC4A04" name="Customer" processType="None" isClosed="false" isExecutable="false">
+			<process id="sid-C3803939-0872-457F-8336-EAE484DC4A04" name="Customer" processType="None" isClosed="false" isExecutable="true">
 				<extensionElements />
 				<laneSet id="sid-b167d0d7-e761-4636-9200-76b7f0e8e83a">
 					<lane id="sid-57E4FE0D-18E4-478D-BC5D-B15164E93254">
@@ -170,7 +170,8 @@ const mockVersion = [
 					<omgdc:Font name="Arial" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" />
 				</bpmndi:BPMNLabelStyle>
 			</bpmndi:BPMNDiagram>
-		</definitions>`
+		</definitions>
+		`
   }
 ];
 
@@ -203,6 +204,7 @@ export class MockBPMNService implements BPMNService {
     return;
   }
   async updateVersion(id: string, version: number, item: { xml: string }): Promise<void> {
+		console.log(item.xml)
     return;
   }
   async deleteVersion(id: string, version: number): Promise<void> {
