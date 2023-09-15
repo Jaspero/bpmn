@@ -16,6 +16,7 @@
   import type { BPMNTrigger } from './types/bpmn-trigger.interface';
   import { random } from '@jaspero/utils'
   import base32 from 'base32'
+  import customRendererModule from '../custom'
 
   const dispatch = createEventDispatcher();
 
@@ -137,7 +138,10 @@
       container: '#canvas',
       keyboard: {
         bindTo: window
-      }
+      },
+      additionalModules: [
+        customRendererModule
+      ]
     });
 
     elementFactory = modeler.get('elementFactory')
