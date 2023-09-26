@@ -1,6 +1,6 @@
 import BaseRenderer from 'diagram-js/lib/draw/BaseRenderer';
 
-import { restIcon } from './icons.js'
+import { restIcon, dmnIcon } from './icons.js'
 
 import {
   append as svgAppend,
@@ -41,9 +41,13 @@ export default class CustomRenderer extends BaseRenderer {
         href = restIcon
       }
 
+      if(element.id.includes('jpdmn')){
+        href = dmnIcon
+      }
+
       const img = svgCreate('image')
       svgAttr(img, {
-        href: restIcon,
+        href,
         width: 18,
         height: 18,
         x: element.width - 25,

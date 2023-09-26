@@ -22,6 +22,8 @@ export interface BPMNService {
 
   delete(id: string): Promise<void>;
 
+  getDMNs(): Promise<Array<{id: string, name: string}>>;
+
   getTriggers(): Promise<BPMNTrigger[]>;
 
   getVersions(id: string): Promise<number[]>;

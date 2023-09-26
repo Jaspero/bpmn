@@ -36,6 +36,9 @@
     url: '',
     headers: [{name: '', value: ''}],
   }
+  
+  let selectedDMN = '';
+  let DMNs: Array<{id: string, name: string}> = [];
 
   let modeler: any;
   let elementFactory: any;
@@ -91,21 +94,28 @@
   
   function handleServiceChange(){
     let el = elementRegistry.get(selectedTask)
-    let newId;
+    let newId = random.string(24);
     const replace = modeler.get('replace')
     if(selectedService == 'None') {
-      if(el.type == 'bpmn:ServiceTask'){
+      if(el.type != 'bpmn:Task'){
         el = replace.replaceElement(el, {type: 'bpmn:Task'})
       }
-      newId = random.string(24)
-    } else {
-      if(el.type == 'bpmn:Task'){
+    } else if (selectedService == 'DMN') {
+      if(el.type != 'bpmn:ServiceTask'){
+        el = replace.replaceElement(el, {type: 'bpmn:ServiceTask'})
+        modeling.updateProperties(el, {
+          implementation: "\${environment.services.defaultDMNRun()}"
+        })
+      }
+      newId = 'jpservice' + newId + 'jpdmn' + selectedDMN
+    } else if (selectedService == 'http') {
+      if(el.type != 'bpmn:ServiceTask'){
         el = replace.replaceElement(el, {type: 'bpmn:ServiceTask'})
         modeling.updateProperties(el, {
           implementation: "\${environment.services.defaultServiceRun()}"
         })
       }
-      newId = 'jpservice' + random.string(24) + 'jphttp' + base32.encode(JSON.stringify({service: selectedService, config: {...restForm}}))
+      newId = 'jpservice' + newId + 'jphttp' + base32.encode(JSON.stringify({service: selectedService, config: {...restForm}}))
     }
     modeling.updateProperties(el, {
       id: newId
@@ -116,10 +126,11 @@
   onMount(async () => {
     await loadBpmn();
 
-    [instance, versionInstance, triggers] = await Promise.all([
+    [instance, versionInstance, triggers, DMNs] = await Promise.all([
       service.get(id),
       service.getVersion(id, version),
-      service.getTriggers()
+      service.getTriggers(),
+      service.getDMNs()
     ]);
 
     triggers.forEach((el) => (triggerVersions[el.id] = el.versions));
@@ -155,6 +166,7 @@
       if(e.gfx.classList.contains('selected')){
         if(e.element.type == 'bpmn:Task'){
           selectedService = 'None'
+          selectedDMN = ''
           restForm = {
             method: 'GET',
             url: '',
@@ -163,10 +175,16 @@
           selectedTask = e.element.id
         }
         else if(e.element.type == 'bpmn:ServiceTask'){
-          const {service, config} = JSON.parse(base32.decode(e.element.id.split('jphttp')[1]))
-          selectedService = service
-          restForm = {...config}
-          selectedTask = e.element.id
+          if(e.element.id.includes('jphttp')){
+            const {service, config} = JSON.parse(base32.decode(e.element.id.split('jphttp')[1]))
+            selectedService = service
+            restForm = {...config}
+            selectedTask = e.element.id
+          } else if (e.element.id.includes('jpdmn')) {
+            selectedService = 'DMN'
+            selectedDMN = e.element.id.split('jpdmn')[1]
+            selectedTask = e.element.id
+          }
         } else {
           selectedTask = null
         }
@@ -251,12 +269,19 @@
               <div class="field-container">
                 <label for="service">Service</label>
                 <select id="service" bind:value={selectedService} on:change={() => handleServiceChange()} required>
-                  {#each ['None', 'http'] as service}
+                  {#each ['None', 'http', 'DMN'] as service}
                     <option value={service}>{service}</option>
                   {/each}
                 </select>
                 {#if selectedService == 'http'}
                   <RestForm bind:fields={restForm} on:change={() => handleServiceChange()}></RestForm>
+                {/if}
+                {#if selectedService == 'DMN'}
+                <select id="dmn" bind:value={selectedDMN} on:change={() => handleServiceChange()}>
+                  {#each DMNs as dmn}
+                    <option value={dmn.id}>{dmn.name}</option>
+                  {/each}
+                </select>
                 {/if}
               </div>
           </details>
