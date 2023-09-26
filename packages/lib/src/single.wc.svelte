@@ -104,7 +104,7 @@
       if(el.type != 'bpmn:ServiceTask'){
         el = replace.replaceElement(el, {type: 'bpmn:ServiceTask'})
         modeling.updateProperties(el, {
-          implementation: "\${environment.services.defaultDMNRun()}"
+          implementation: "\${environment.services.defaultServiceRun()}"
         })
       }
       newId = 'jpservice' + newId + 'jpdmn' + selectedDMN
