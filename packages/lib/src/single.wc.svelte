@@ -38,7 +38,9 @@
   }
   
   let selectedDMN = '';
-  let DMNs: Array<{id: string, name: string}> = [];
+  let selectedDMNVersion = '';
+  let DMNs: Array<{id: string, name: string, versions: number[]}> = [];
+  let DMNVersions: any = {}
 
   let modeler: any;
   let elementFactory: any;
@@ -107,7 +109,7 @@
           implementation: "\${environment.services.defaultServiceRun()}"
         })
       }
-      newId = 'jpservice' + newId + 'jpdmn' + selectedDMN
+      newId = 'jpservice' + newId + 'jpdmn' + base32.encode(JSON.stringify({service: selectedService, config: {id: selectedDMN, version: selectedDMNVersion}}))
     } else if (selectedService == 'http') {
       if(el.type != 'bpmn:ServiceTask'){
         el = replace.replaceElement(el, {type: 'bpmn:ServiceTask'})
@@ -134,6 +136,8 @@
     ]);
 
     triggers.forEach((el) => (triggerVersions[el.id] = el.versions));
+
+    DMNs.forEach(el => DMNVersions[el.id] = el.versions)
 
     instanceBackup = { ...instance };
     versionInstanceBackup = { ...versionInstance };
@@ -181,8 +185,10 @@
             restForm = {...config}
             selectedTask = e.element.id
           } else if (e.element.id.includes('jpdmn')) {
-            selectedService = 'DMN'
-            selectedDMN = e.element.id.split('jpdmn')[1]
+            const { service, config } = JSON.parse(base32.decode(e.element.id.split('jpdmn')[1]))
+            selectedService = service
+            selectedDMN = config.id
+            selectedDMNVersion = config.version
             selectedTask = e.element.id
           }
         } else {
@@ -282,6 +288,13 @@
                     <option value={dmn.id}>{dmn.name}</option>
                   {/each}
                 </select>
+                  {#if selectedDMN}
+                  <select id="dmn-version" bind:value={selectedDMNVersion} on:change={() => handleServiceChange()}>
+                    {#each DMNVersions[selectedDMN] as version}
+                      <option value={version}>{version}</option>
+                    {/each}
+                  </select>
+                  {/if}
                 {/if}
               </div>
           </details>

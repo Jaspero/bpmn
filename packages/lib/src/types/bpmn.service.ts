@@ -22,7 +22,7 @@ export interface BPMNService {
 
   delete(id: string): Promise<void>;
 
-  getDMNs(): Promise<Array<{id: string, name: string}>>;
+  getDMNs(): Promise<Array<{id: string, name: string, versions: number[]}>>;
 
   getTriggers(): Promise<BPMNTrigger[]>;
 
