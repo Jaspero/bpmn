@@ -10,7 +10,7 @@
   import type { BPMN } from './types/bpmn.interface';
   import type { BPMNService } from './types/bpmn.service';
 
-  export let service: BPMNService;
+  export let bpmnService: BPMNService;
   export let buttonColor: 'primary' | 'secondary' = 'primary';
 
   const dispatch = createEventDispatcher();
@@ -40,7 +40,7 @@
 
     loading = true;
 
-    const res = await service.list(ref);
+    const res = await bpmnService.list(ref);
 
     hasMore = !!res.length;
 
@@ -75,7 +75,7 @@
   }
 
   async function del(index: number, item: BPMN) {
-    await service.delete(item.id);
+    await bpmnService.delete(item.id);
     items.splice(index, 1);
     items = [...items];
     popup = null;
@@ -83,7 +83,7 @@
 
   async function delVersion(id: string, version: number){
     versionDelLoading = true
-    await service.deleteVersion(id, version)
+    await bpmnService.deleteVersion(id, version)
     versionsObj.versions = versionsObj.versions.filter(el => el != version)
     versionDelLoading = false
   }
@@ -97,8 +97,8 @@
   }
 
   async function newVersion(id) {
-    await service.createVersion(id, {xml: ''});
-    const {version} = await service.get(id);
+    await bpmnService.createVersion(id, {xml: ''});
+    const {version} = await bpmnService.get(id);
 
     dispatch('versionCreated', {id, version});
   }
@@ -110,7 +110,7 @@
 
     newLoading = true;
 
-    const {id} = await service.create(form);
+    const {id} = await bpmnService.create(form);
 
     await newVersion(id);
 
@@ -130,7 +130,7 @@
 
     versionsObj.id = id
     versionsObj.version = version
-    versionsObj.versions = await service.getVersions(id)
+    versionsObj.versions = await bpmnService.getVersions(id)
 
     loadingVersions = false
     versionsDialog = true
