@@ -7,7 +7,6 @@
 
 <script lang="ts">
   import Button from './Button.svelte';
-  import RestForm from './RestForm.svelte';
   import { onMount, createEventDispatcher } from 'svelte';
   import type { BPMNService } from './types/bpmn.service';
   import type { BPMNVersion } from './types/bpmn-version.interface';
@@ -17,10 +16,12 @@
   import { random } from '@jaspero/utils'
   import base32 from 'base32'
   import customRendererModule from '../custom'
+  import { state } from './state.service';
 
   const dispatch = createEventDispatcher();
 
-  export let service: BPMNService;
+  export let bpmnService: BPMNService;
+  export let services: string[];
   export let id: string;
   export let version: number;
   export let buttonColor: 'primary'|'secondary' = 'primary'
@@ -30,17 +31,8 @@
 
   let selectedTask: string | null = null;
   let selectedService;
-
-  let restForm = {
-    method: 'GET',
-    url: '',
-    headers: [{name: '', value: ''}],
-  }
-  
-  let selectedDMN = '';
-  let selectedDMNVersion = '';
-  let DMNs: Array<{id: string, name: string, versions: number[]}> = [];
-  let DMNVersions: any = {}
+  let serviceForm;
+  let serviceComponents = {};
 
   let modeler: any;
   let elementFactory: any;
@@ -71,7 +63,7 @@
     const changes = Object.keys(instance).some((key) => instance[key] !== instanceBackup[key]);
 
     if (changes) {
-      await service.update(id, {
+      await bpmnService.update(id, {
         name: instance.name,
         description: instance.description
       });
@@ -87,14 +79,14 @@
 
     version_changes['active'] = versionInstance.active // makes sure active is sent
 
-    await service.updateVersion(id, version, {...version_changes})
+    await bpmnService.updateVersion(id, version, {...version_changes})
 
     saveLoading = false;
 
     dispatch('saved');
   }
   
-  function handleServiceChange(){
+  function handleServiceChange(e = {detail: {fields: null}}){
     let el = elementRegistry.get(selectedTask)
     let newId = random.string(24);
     const replace = modeler.get('replace')
@@ -102,22 +94,14 @@
       if(el.type != 'bpmn:Task'){
         el = replace.replaceElement(el, {type: 'bpmn:Task'})
       }
-    } else if (selectedService == 'DMN') {
+    } else {
       if(el.type != 'bpmn:ServiceTask'){
         el = replace.replaceElement(el, {type: 'bpmn:ServiceTask'})
         modeling.updateProperties(el, {
           implementation: "\${environment.services.defaultServiceRun()}"
         })
       }
-      newId = 'jpservice' + newId + 'jpdmn' + base32.encode(JSON.stringify({service: selectedService, config: {id: selectedDMN, version: selectedDMNVersion}}))
-    } else if (selectedService == 'http') {
-      if(el.type != 'bpmn:ServiceTask'){
-        el = replace.replaceElement(el, {type: 'bpmn:ServiceTask'})
-        modeling.updateProperties(el, {
-          implementation: "\${environment.services.defaultServiceRun()}"
-        })
-      }
-      newId = 'jpservice' + newId + 'jphttp' + base32.encode(JSON.stringify({service: selectedService, config: {...restForm}}))
+      newId = newId + 'jpservice' + base32.encode(JSON.stringify({service: selectedService, fields: {...e.detail.fields}}))
     }
     modeling.updateProperties(el, {
       id: newId
@@ -126,18 +110,20 @@
   }
 
   onMount(async () => {
+    state.service = bpmnService;
     await loadBpmn();
 
-    [instance, versionInstance, triggers, DMNs] = await Promise.all([
-      service.get(id),
-      service.getVersion(id, version),
-      service.getTriggers(),
-      service.getDMNs()
+    [instance, versionInstance, triggers] = await Promise.all([
+      bpmnService.get(id),
+      bpmnService.getVersion(id, version),
+      bpmnService.getTriggers()
     ]);
 
-    triggers.forEach((el) => (triggerVersions[el.id] = el.versions));
+    await Promise.all(services.map(async el => {
+      serviceComponents[el] = (await import(`./services/${el}.svelte`)).default;
+    }))
 
-    DMNs.forEach(el => DMNVersions[el.id] = el.versions)
+    triggers.forEach((el) => (triggerVersions[el.id] = el.versions));
 
     instanceBackup = { ...instance };
     versionInstanceBackup = { ...versionInstance };
@@ -170,27 +156,14 @@
       if(e.gfx.classList.contains('selected')){
         if(e.element.type == 'bpmn:Task'){
           selectedService = 'None'
-          selectedDMN = ''
-          restForm = {
-            method: 'GET',
-            url: '',
-            headers: [{name: '', value: ''}],
-          }
           selectedTask = e.element.id
         }
         else if(e.element.type == 'bpmn:ServiceTask'){
-          if(e.element.id.includes('jphttp')){
-            const {service, config} = JSON.parse(base32.decode(e.element.id.split('jphttp')[1]))
+            const {service, fields} = JSON.parse(base32.decode(e.element.id.split('jpservice')[1]))
             selectedService = service
-            restForm = {...config}
+            // TODO: better way to fix this race condition
+            setTimeout(() => serviceForm.setFields(fields), 1)
             selectedTask = e.element.id
-          } else if (e.element.id.includes('jpdmn')) {
-            const { service, config } = JSON.parse(base32.decode(e.element.id.split('jpdmn')[1]))
-            selectedService = service
-            selectedDMN = config.id
-            selectedDMNVersion = config.version
-            selectedTask = e.element.id
-          }
         } else {
           selectedTask = null
         }
@@ -274,29 +247,16 @@
             <div class="details-grid">
               <div class="field-container">
                 <label for="service">Service</label>
-                <select id="service" bind:value={selectedService} on:change={() => handleServiceChange()} required>
-                  {#each ['None', 'http', 'DMN'] as service}
+                <select id="service" bind:value={selectedService} required on:change={() => handleServiceChange()}>
+                  {#each ['None', 'http', 'dmn'] as service}
                     <option value={service}>{service}</option>
                   {/each}
                 </select>
-                {#if selectedService == 'http'}
-                  <RestForm bind:fields={restForm} on:change={() => handleServiceChange()}></RestForm>
-                {/if}
-                {#if selectedService == 'DMN'}
-                <select id="dmn" bind:value={selectedDMN} on:change={() => handleServiceChange()}>
-                  {#each DMNs as dmn}
-                    <option value={dmn.id}>{dmn.name}</option>
-                  {/each}
-                </select>
-                  {#if selectedDMN}
-                  <select id="dmn-version" bind:value={selectedDMNVersion} on:change={() => handleServiceChange()}>
-                    {#each DMNVersions[selectedDMN] as version}
-                      <option value={version}>{version}</option>
-                    {/each}
-                  </select>
-                  {/if}
+                {#if selectedService != 'None'}
+                  <svelte:component this={serviceComponents[selectedService]} bind:this={serviceForm} on:change={(e) => handleServiceChange(e)} />
                 {/if}
               </div>
+            </div>
           </details>
         {/if}
 

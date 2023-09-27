@@ -211,8 +211,8 @@ export class MockBPMNService implements BPMNService {
     return;
   }
 
-	async getDMNs(): Promise<Array<{id: string, name: string}>> {
-		return [{name: '123', id: '11'}, {name: '44423', id: '11323'}]
+	async getDMNs(): Promise<Array<{id: string, name: string, versions: number[]}>> {
+		return [{name: '123', id: '11', versions: [1, 3]}, {name: '44423', id: '11323', versions: [1]}]
 	}
 
   async getTriggers(): Promise<BPMNTrigger[]> {

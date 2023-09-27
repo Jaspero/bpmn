@@ -1,5 +1,9 @@
-<script>
-  import {createEventDispatcher} from 'svelte'
+<script lang="ts">
+  import {createEventDispatcher, onMount} from 'svelte'
+  import type { BPMNService } from '../types/bpmn.service';
+  import {state} from '../state.service'
+
+  let bpmnService: BPMNService; 
 
   export let fields = {
     method: 'GET',
@@ -7,9 +11,26 @@
     headers: [{name: '', value: ''}],
   }
 
+  export function reset() {
+    fields = {
+      method: 'GET',
+      url: '',
+      headers: [{name: '', value: ''}],
+    }
+  }
+
+  
+  export function setFields(newFields){
+    fields = newFields
+  }
+
   const dispatch = createEventDispatcher()
 
   $: dispatch('change', {fields})
+
+  onMount(() => {
+    bpmnService = state.service
+  })
 </script>
 
 
