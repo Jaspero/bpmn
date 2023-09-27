@@ -21,7 +21,6 @@
   const dispatch = createEventDispatcher();
 
   export let bpmnService: BPMNService;
-  export let services: string[];
   export let id: string;
   export let version: number;
   export let buttonColor: 'primary'|'secondary' = 'primary'
@@ -33,6 +32,8 @@
   let selectedService;
   let serviceForm;
   let serviceComponents = {};
+  let serviceURLs = {};
+  let services = ['None'];
 
   let modeler: any;
   let elementFactory: any;
@@ -101,7 +102,7 @@
           implementation: "\${environment.services.defaultServiceRun()}"
         })
       }
-      newId = newId + 'jpservice' + base32.encode(JSON.stringify({service: selectedService, fields: {...e.detail.fields}}))
+      newId = newId + 'jpservice' + base32.encode(JSON.stringify({service: selectedService, url: serviceURLs[selectedService], fields: {...e.detail.fields}}))
     }
     modeling.updateProperties(el, {
       id: newId
@@ -112,15 +113,19 @@
   onMount(async () => {
     state.service = bpmnService;
     await loadBpmn();
-
-    [instance, versionInstance, triggers] = await Promise.all([
+    
+    let modelServices;
+    [instance, versionInstance, triggers, modelServices] = await Promise.all([
       bpmnService.get(id),
       bpmnService.getVersion(id, version),
-      bpmnService.getTriggers()
+      bpmnService.getTriggers(),
+      bpmnService.getServices()
     ]);
 
-    await Promise.all(services.map(async el => {
-      serviceComponents[el] = (await import(`./services/${el}.svelte`)).default;
+    await Promise.all(modelServices.map(async el => {
+      serviceComponents[el.service] = (await import(`./services/${el.service}.svelte`)).default;
+      serviceURLs[el.service] = el.url
+      services.push(el.service)
     }))
 
     triggers.forEach((el) => (triggerVersions[el.id] = el.versions));
@@ -159,7 +164,7 @@
           selectedTask = e.element.id
         }
         else if(e.element.type == 'bpmn:ServiceTask'){
-            const {service, fields} = JSON.parse(base32.decode(e.element.id.split('jpservice')[1]))
+            const {service, url, fields} = JSON.parse(base32.decode(e.element.id.split('jpservice')[1]))
             selectedService = service
             // TODO: better way to fix this race condition
             setTimeout(() => serviceForm.setFields(fields), 1)
@@ -248,7 +253,7 @@
               <div class="field-container">
                 <label for="service">Service</label>
                 <select id="service" bind:value={selectedService} required on:change={() => handleServiceChange()}>
-                  {#each ['None', 'http', 'dmn'] as service}
+                  {#each services as service}
                     <option value={service}>{service}</option>
                   {/each}
                 </select>

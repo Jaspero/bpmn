@@ -12,8 +12,6 @@
 
     // @ts-ignore
     instanceEl.bpmnService = new MockBPMNService();
-    // @ts-ignore
-    instanceEl.services = ['http', 'dmn'];
 
     el.appendChild(instanceEl);
   })

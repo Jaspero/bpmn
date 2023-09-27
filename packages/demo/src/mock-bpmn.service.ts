@@ -215,6 +215,10 @@ export class MockBPMNService implements BPMNService {
 		return [{name: '123', id: '11', versions: [1, 3]}, {name: '44423', id: '11323', versions: [1]}]
 	}
 
+	getServices(): Promise<Array<{service: string, url: string}>> {
+		return [{service: 'http', url: 'testurl.com'}, {service: 'dmn', url: 'testurl2.com'}]
+	}
+
   async getTriggers(): Promise<BPMNTrigger[]> {
     return [
       {

@@ -24,6 +24,8 @@ export interface BPMNService {
 
   getDMNs(): Promise<Array<{id: string, name: string, versions: number[]}>>;
 
+  getServices(): Promise<Array<{service: string, url: string}>>;
+
   getTriggers(): Promise<BPMNTrigger[]>;
 
   getVersions(id: string): Promise<number[]>;
