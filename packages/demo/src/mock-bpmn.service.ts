@@ -126,6 +126,14 @@ export class MockBPMNService implements BPMNService {
 				id: 'http',
 				url: 'testurl.com',
 				configFields: [
+          {
+            component: 'jp-input',
+            field: '/url',
+            options: {
+              label: 'URL',
+              type: 'url'
+            }
+          },
 					{
 						component: 'jp-select',
 						field: '/method',
@@ -140,6 +148,20 @@ export class MockBPMNService implements BPMNService {
 							]
 						}
 					},
+          {
+            component: 'jp-json-editor',
+            field: '/headers',
+            options: {
+              label: 'Headers',
+            }
+          },
+          {
+            component: 'jp-json-editor',
+            field: '/body',
+            options: {
+              label: 'Body'
+            }
+          }
 				]
 			},
       {

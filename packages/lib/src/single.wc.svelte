@@ -225,7 +225,6 @@
     const eventBus = modeler.get('eventBus');
 
     eventBus.on('element.click', (e) => {
-      console.log('e', e);
       if (e.gfx.classList.contains('selected')) {
         const { type, id, source } = e.element;
 
@@ -440,7 +439,7 @@
     -ms-flex-direction: column;
     flex-direction: column;
     width: 100%;
-    height: 100vh;
+    height: 100%;
   }
 
   .navigation {

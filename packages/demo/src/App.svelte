@@ -18,3 +18,9 @@
 </script>
 
 <div bind:this={el}></div>
+
+<style>
+  div {
+    height: 100vh;
+  }
+</style>

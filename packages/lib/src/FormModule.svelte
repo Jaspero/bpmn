@@ -8,6 +8,7 @@
   import '@jaspero/web-components/dist/checkbox.wc';
   import '@jaspero/web-components/dist/image-upload.wc';
   import '@jaspero/web-components/dist/code-editor.wc';
+  import '@jaspero/web-components/dist/json-editor.wc';
 
   import { ModularSchema, ModularView } from '@jaspero/modular';
   import { createEventDispatcher } from 'svelte';
@@ -28,6 +29,11 @@
   }
 
   function reRender() {
+
+    if (render) {
+      render.destroy();
+    }
+
     const schema = new ModularSchema({});
     const instance = schema.createInstance(value || {});
 
