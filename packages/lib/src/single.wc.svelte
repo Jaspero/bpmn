@@ -131,27 +131,43 @@
       type: 'service',
       value: {
         service: serviceId,
-        ...config && {config}
+        ...(config && { config })
       },
-      ...service && {configFields: service.configFields}
+      ...(service && { configFields: service.configFields })
     };
   }
 
   function handleConfigChange() {
-
     const el = elementRegistry.get(selection.id);
 
     switch (selection.type) {
       case 'service': {
         const service = services.find((it) => it.id === selection.value.service);
-        const newId = random.string(24) + 'jpservice' + base32.encode(JSON.stringify({ service: selection.value.service, url: service.url, config: selection.value.config }));
-        
+        const newId =
+          random.string(24) +
+          'jpservice' +
+          base32.encode(
+            JSON.stringify({
+              service: selection.value.service,
+              url: service.url,
+              config: selection.value.config
+            })
+          );
+
         modeling.updateProperties(el, {
           id: newId
         });
         break;
       }
       case 'condition': {
+        const condition = moddle.create('bpmn:FormalExpression', {
+          body: '<![CDATA[next(null, ' + selection.value.config.condition + ');]]>'
+        });
+
+        modeling.updateProperties(el, { 
+          conditionExpression: condition
+        });
+
         break;
       }
     }
@@ -232,7 +248,28 @@
               break;
             }
 
-            selectElement('condition', id);
+            selectElement('condition', id, {
+              configFields: [
+                {
+                  component: 'jp-code-editor',
+                  field: '/condition',
+                  options: {
+                    label: 'Condition',
+                    options: {
+                      lineNumbers: true,
+                      mode: 'javascript',
+                      styleActiveLine: true,
+                      matchBrackets: true
+                    }
+                  }
+                }
+              ],
+              value: {
+                config: {
+                  condition: e.element?.businessObject?.conditionExpression?.body.replace(/<!\[CDATA\[next\(null, (.*)\)\;]]>/, '$1')
+                }
+              }
+            });
 
             return;
           }
@@ -373,7 +410,11 @@
                   </select>
                 {/if}
                 {#if selection.configFields}
-                  <FormModule items={selection.configFields} bind:value={selection.value.config} on:value={handleConfigChange} />
+                  <FormModule
+                    items={selection.configFields}
+                    bind:value={selection.value.config}
+                    on:value={handleConfigChange}
+                  />
                 {/if}
               </div>
             </div>

@@ -3,11 +3,11 @@
   import '@jaspero/web-components/dist/select.wc';
   import '@jaspero/web-components/dist/multiselect.wc';
   import '@jaspero/web-components/dist/datepicker.wc';
-  import '@jaspero/web-components/dist/image-upload.wc';
   import '@jaspero/web-components/dist/quill.wc';
   import '@jaspero/web-components/dist/textarea.wc';
   import '@jaspero/web-components/dist/checkbox.wc';
   import '@jaspero/web-components/dist/image-upload.wc';
+  import '@jaspero/web-components/dist/code-editor.wc';
 
   import { ModularSchema, ModularView } from '@jaspero/modular';
   import { createEventDispatcher } from 'svelte';
