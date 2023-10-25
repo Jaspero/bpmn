@@ -6,34 +6,36 @@
 />
 
 <script lang="ts">
-  import Button from './Button.svelte';
   import { onMount, createEventDispatcher } from 'svelte';
   import type { BPMNService } from './types/bpmn.service';
   import type { BPMNVersion } from './types/bpmn-version.interface';
   import type { BPMN } from './types/bpmn.interface';
   import { loadBpmn } from './load-bpmn';
   import type { BPMNTrigger } from './types/bpmn-trigger.interface';
-  import { random } from '@jaspero/utils'
-  import base32 from 'base32'
-  import customRendererModule from '../custom'
+  import { random } from '@jaspero/utils';
+  import base32 from 'base32';
+  import customRendererModule from '../custom';
   import { state } from './state.service';
-
-  const dispatch = createEventDispatcher();
+  import type { BPMNModelService } from './types/bpmn-model-service.interface';
+  import FormModule from './FormModule.svelte';
 
   export let bpmnService: BPMNService;
   export let id: string;
   export let version: number;
-  export let buttonColor: 'primary'|'secondary' = 'primary'
+  export let buttonColor: 'primary' | 'secondary' = 'primary';
+
+  const dispatch = createEventDispatcher();
 
   let loading = true;
   let sidebar = false;
 
-  let selectedTask: string | null = null;
-  let selectedService;
-  let serviceForm;
-  let serviceComponents = {};
-  let serviceURLs = {};
-  let services = ['None'];
+  let selection: {
+    id: string;
+    type: 'service' | 'condition';
+    value?: { config?: any } & any;
+    configFields?: any[];
+  } | null = null;
+  let services: BPMNModelService[];
 
   let modeler: any;
   let elementFactory: any;
@@ -46,10 +48,10 @@
   let versionInstance: BPMNVersion;
   let versionInstanceBackup: BPMNVersion;
   let triggers: BPMNTrigger[];
-  let triggerVersions: any = {};
+  let triggerVersions: { [key: string]: number[] } = {};
 
-  let selectedTrigger;
-  let selectedTriggerVersion;
+  let selectedTrigger: string;
+  let selectedTriggerVersion: string;
 
   let saveLoading = false;
 
@@ -59,8 +61,8 @@
 
   async function save() {
     saveLoading = true;
-    const { xml } = await modeler.saveXML({ format: true });
 
+    const { xml } = await modeler.saveXML({ format: true });
     const changes = Object.keys(instance).some((key) => instance[key] !== instanceBackup[key]);
 
     if (changes) {
@@ -70,63 +72,115 @@
       });
     }
 
-    const version_changes : any = Object.keys(versionInstance).filter(el => versionInstance[el] != versionInstanceBackup[el]).reduce((a, c) => {
-      return {...a, [c]: versionInstance[c]}
-    }, {})
+    const version_changes: any = Object.keys(versionInstance)
+      .filter((el) => versionInstance[el] != versionInstanceBackup[el])
+      .reduce((a, c) => {
+        return { ...a, [c]: versionInstance[c] };
+      }, {});
 
-    if(versionInstance.xml != xml) {
-      version_changes['xml'] = xml
+    if (versionInstance.xml != xml) {
+      version_changes['xml'] = xml;
     }
 
-    version_changes['active'] = versionInstance.active // makes sure active is sent
+    version_changes['active'] = versionInstance.active; // makes sure active is sent
 
-    await bpmnService.updateVersion(id, version, {...version_changes})
+    await bpmnService.updateVersion(id, version, { ...version_changes });
 
     saveLoading = false;
 
     dispatch('saved');
   }
-  
-  function handleServiceChange(e = {detail: {fields: null}}){
-    let el = elementRegistry.get(selectedTask)
+
+  function handleServiceChange() {
+    let el = elementRegistry.get(selection.id);
     let newId = random.string(24);
-    const replace = modeler.get('replace')
-    if(selectedService == 'None') {
-      if(el.type != 'bpmn:Task'){
-        el = replace.replaceElement(el, {type: 'bpmn:Task'})
+
+    const replace = modeler.get('replace');
+    const { service: serviceId } = selection.value;
+
+    let service: BPMNModelService;
+    let config: any;
+
+    if (selection.value.service) {
+      service = services.find((it) => it.id === serviceId);
+
+      if (!config) {
+        config = service.defaultConfig;
       }
-    } else {
-      if(el.type != 'bpmn:ServiceTask'){
-        el = replace.replaceElement(el, {type: 'bpmn:ServiceTask'})
+
+      if (el.type !== 'bpmn:ServiceTask') {
+        el = replace.replaceElement(el, { type: 'bpmn:ServiceTask' });
         modeling.updateProperties(el, {
-          implementation: "\${environment.services.defaultServiceRun()}"
-        })
+          implementation: '${environment.services.defaultServiceRun()}'
+        });
       }
-      newId = newId + 'jpservice' + base32.encode(JSON.stringify({service: selectedService, url: serviceURLs[selectedService], fields: {...e.detail.fields}}))
+      newId =
+        newId +
+        'jpservice' +
+        base32.encode(JSON.stringify({ service: serviceId, url: service.url, config }));
+    } else if (el.type !== 'bpmn:Task') {
+      el = replace.replaceElement(el, { type: 'bpmn:Task' });
     }
+
     modeling.updateProperties(el, {
       id: newId
-    })
-    selectedTask = newId
+    });
+
+    selection = {
+      id: newId,
+      type: 'service',
+      value: {
+        service: serviceId,
+        ...config && {config}
+      },
+      ...service && {configFields: service.configFields}
+    };
+  }
+
+  function handleConfigChange() {
+
+    const el = elementRegistry.get(selection.id);
+
+    switch (selection.type) {
+      case 'service': {
+        const service = services.find((it) => it.id === selection.value.service);
+        const newId = random.string(24) + 'jpservice' + base32.encode(JSON.stringify({ service: selection.value.service, url: service.url, config: selection.value.config }));
+        
+        modeling.updateProperties(el, {
+          id: newId
+        });
+        break;
+      }
+      case 'condition': {
+        break;
+      }
+    }
+  }
+
+  function selectElement(
+    type: 'service' | 'condition',
+    id: string,
+    config?: { value?: any; configFields?: any[] }
+  ) {
+    selection = {
+      id,
+      type,
+      ...(config || {})
+    };
+    sidebar = true;
   }
 
   onMount(async () => {
     state.service = bpmnService;
+
     await loadBpmn();
-    
-    let modelServices;
-    [instance, versionInstance, triggers, modelServices] = await Promise.all([
+
+    [instance, versionInstance, triggers, services] = await Promise.all([
       bpmnService.get(id),
       bpmnService.getVersion(id, version),
       bpmnService.getTriggers(),
       bpmnService.getServices()
     ]);
-
-    await Promise.all(modelServices.map(async el => {
-      serviceComponents[el.service] = (await import(`./services/${el.service}.svelte`)).default;
-      serviceURLs[el.service] = el.url
-      services.push(el.service)
-    }))
 
     triggers.forEach((el) => (triggerVersions[el.id] = el.versions));
 
@@ -136,7 +190,6 @@
     if (versionInstance.trigger) {
       selectedTrigger = versionInstance.trigger.split('-v')[0];
       selectedTriggerVersion = versionInstance.trigger.split('-v')[1];
-
     }
 
     // @ts-ignore
@@ -145,37 +198,49 @@
       keyboard: {
         bindTo: window
       },
-      additionalModules: [
-        customRendererModule
-      ]
+      additionalModules: [customRendererModule]
     });
 
-    elementFactory = modeler.get('elementFactory')
-    elementRegistry = modeler.get('elementRegistry')
-    modeling = modeler.get('modeling')
-    moddle = modeler.get('moddle')
+    elementFactory = modeler.get('elementFactory');
+    elementRegistry = modeler.get('elementRegistry');
+    modeling = modeler.get('modeling');
+    moddle = modeler.get('moddle');
 
-    const eventBus = modeler.get('eventBus')
+    const eventBus = modeler.get('eventBus');
 
     eventBus.on('element.click', (e) => {
-      if(e.gfx.classList.contains('selected')){
-        if(e.element.type == 'bpmn:Task'){
-          selectedService = 'None'
-          selectedTask = e.element.id
+      console.log('e', e);
+      if (e.gfx.classList.contains('selected')) {
+        const { type, id, source } = e.element;
+
+        switch (type) {
+          case 'bpmn:Task': {
+            selectElement('service', id, { value: { service: null } });
+            return;
+          }
+          case 'bpmn:ServiceTask': {
+            const { service, config } = JSON.parse(base32.decode(id.split('jpservice')[1]));
+            const serviceType = services.find((it) => it.id === service);
+            selectElement('service', id, {
+              configFields: serviceType.configFields,
+              value: { service, config }
+            });
+            return;
+          }
+          case 'bpmn:SequenceFlow': {
+            if (source.type !== 'bpmn:ExclusiveGateway') {
+              break;
+            }
+
+            selectElement('condition', id);
+
+            return;
+          }
         }
-        else if(e.element.type == 'bpmn:ServiceTask'){
-            const {service, url, fields} = JSON.parse(base32.decode(e.element.id.split('jpservice')[1]))
-            selectedService = service
-            // TODO: better way to fix this race condition
-            setTimeout(() => serviceForm.setFields(fields), 1)
-            selectedTask = e.element.id
-        } else {
-          selectedTask = null
-        }
-      } else {
-        selectedTask = null
       }
-    })
+
+      selection = null;
+    });
 
     // TODO: Handle warnings and errors
     const { warnings } = await modeler.importXML(versionInstance.xml);
@@ -193,7 +258,9 @@
 
 <div id="layout" class="layout">
   <nav class="navigation">
-    <button class="button button-outlined {buttonColor}" on:click={() => dispatch('back')}>Back</button>
+    <button class="button button-outlined {buttonColor}" on:click={() => dispatch('back')}
+      >Back</button
+    >
     <button class="button button-filled {buttonColor}" class:loading={saveLoading} on:click={save}>
       {#if !saveLoading}
         Save
@@ -208,9 +275,7 @@
     <div id="canvas" class="canvas" />
 
     {#if instance && versionInstance}
-      <button class="sidebar-toggle"
-              class:active={sidebar}
-              on:click={() => (sidebar = !sidebar)}>
+      <button class="sidebar-toggle" class:active={sidebar} on:click={() => (sidebar = !sidebar)}>
         <span class="sidebar-toggle-label"> Details </span>
         <span class="sidebar-toggle-icon material-symbols-outlined"> menu </span>
       </button>
@@ -245,25 +310,6 @@
             </label>
           </div>
         </details>
-
-        {#if selectedTask}
-          <details>
-            <summary>Services</summary>
-            <div class="details-grid">
-              <div class="field-container">
-                <label for="service">Service</label>
-                <select id="service" bind:value={selectedService} required on:change={() => handleServiceChange()}>
-                  {#each services as service}
-                    <option value={service}>{service}</option>
-                  {/each}
-                </select>
-                {#if selectedService != 'None'}
-                  <svelte:component this={serviceComponents[selectedService]} bind:this={serviceForm} on:change={(e) => handleServiceChange(e)} />
-                {/if}
-              </div>
-            </div>
-          </details>
-        {/if}
 
         <details>
           <summary>Trigger</summary>
@@ -306,6 +352,33 @@
             </div>
           </div>
         </details>
+
+        {#if selection}
+          <details>
+            <summary>{selection.type}</summary>
+            <div class="details-grid">
+              <div class="field-container">
+                {#if selection.type === 'service'}
+                  <label for="service">Service</label>
+                  <select
+                    id="service"
+                    bind:value={selection.value.service}
+                    required
+                    on:change={() => handleServiceChange()}
+                  >
+                    <option value={null}>None</option>
+                    {#each services as service}
+                      <option value={service.id}>{service.name}</option>
+                    {/each}
+                  </select>
+                {/if}
+                {#if selection.configFields}
+                  <FormModule items={selection.configFields} bind:value={selection.value.config} on:value={handleConfigChange} />
+                {/if}
+              </div>
+            </div>
+          </details>
+        {/if}
       </div>
     {/if}
   </div>
@@ -393,9 +466,9 @@
     align-items: center;
     width: 100%;
     height: 3.5rem;
-    background-color: rgba(0,0,0,.02);
-    padding: 0 .5rem;
-    gap: .5rem;
+    background-color: rgba(0, 0, 0, 0.02);
+    padding: 0 0.5rem;
+    gap: 0.5rem;
     border-bottom: 2px solid var(--border-primary);
   }
 
@@ -405,7 +478,7 @@
 
   .sidebar-header-title {
     text-transform: uppercase;
-    font-size: .75rem;
+    font-size: 0.75rem;
     line-height: 1rem;
     font-weight: bold;
     overflow: hidden;
@@ -415,7 +488,7 @@
   }
 
   .sidebar-header-subtitle {
-    font-size: .75rem;
+    font-size: 0.75rem;
     line-height: 1rem;
     overflow: hidden;
     -o-text-overflow: ellipsis;
@@ -446,20 +519,20 @@
     -moz-box-align: center;
     -ms-flex-align: center;
     align-items: center;
-    padding: 0 .25rem;
-    -webkit-border-top-left-radius: .25rem;
-    -moz-border-radius-topleft: .25rem;
-    border-top-left-radius: .25rem;
-    -webkit-border-top-right-radius: .25rem;
-    -moz-border-radius-topright: .25rem;
-    border-top-right-radius: .25rem;
+    padding: 0 0.25rem;
+    -webkit-border-top-left-radius: 0.25rem;
+    -moz-border-radius-topleft: 0.25rem;
+    border-top-left-radius: 0.25rem;
+    -webkit-border-top-right-radius: 0.25rem;
+    -moz-border-radius-topright: 0.25rem;
+    border-top-right-radius: 0.25rem;
     background-color: var(--background-primary);
   }
 
   .sidebar-toggle.active {
     right: -webkit-calc(16rem - 46px);
     right: -moz-calc(16rem - 46px);
-    right: calc(16rem - 46px)
+    right: calc(16rem - 46px);
   }
 
   .sidebar-toggle:hover {
@@ -477,19 +550,20 @@
     -o-transform: rotate(90deg);
     transform: rotate(90deg);
     border-bottom: 2px solid var(--border-primary);
-    padding: .25rem;
+    padding: 0.25rem;
   }
 
   details {
-    padding: .5rem;
+    padding: 0.5rem;
     border-bottom: 2px solid var(--border-primary);
     cursor: pointer;
   }
 
   summary {
-    margin: -.5rem;
-    padding: .5rem;
-    font-size: .875rem;
+    margin: -0.5rem;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    text-transform: capitalize;
   }
 
   summary:hover {
@@ -509,7 +583,7 @@
     -moz-box-direction: normal;
     -ms-flex-direction: column;
     flex-direction: column;
-    gap: .5rem;
+    gap: 0.5rem;
     margin-top: 1rem;
   }
 
@@ -526,11 +600,11 @@
     -moz-box-direction: normal;
     -ms-flex-direction: column;
     flex-direction: column;
-    gap: .25rem;
+    gap: 0.25rem;
   }
 
   label {
-    font-size: .75rem;
+    font-size: 0.75rem;
     font-weight: bold;
   }
 
@@ -538,11 +612,11 @@
   textarea,
   select {
     border: 2px solid var(--border-primary);
-    -webkit-border-radius: .25rem;
-    -moz-border-radius: .25rem;
-    border-radius: .25rem;
-    padding: .25rem .5rem;
-    font-size: .875rem;
+    -webkit-border-radius: 0.25rem;
+    -moz-border-radius: 0.25rem;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
   }
 
   .loading-overlay {
@@ -632,9 +706,9 @@
     -ms-flex-pack: center;
     justify-content: center;
     height: 2.5rem;
-    -webkit-border-radius: .25rem;
-    -moz-border-radius: .25rem;
-    border-radius: .25rem;
+    -webkit-border-radius: 0.25rem;
+    -moz-border-radius: 0.25rem;
+    border-radius: 0.25rem;
     text-align: center;
     min-width: 4rem;
     padding: 0 1rem;
@@ -648,7 +722,7 @@
 
   .button:disabled {
     pointer-events: none;
-    opacity: .5;
+    opacity: 0.5;
   }
 
   .button.button-outlined {
@@ -669,7 +743,7 @@
   }
 
   .button.button-filled:hover {
-    opacity: .75;
+    opacity: 0.75;
   }
 
   .button.button-filled.primary {
@@ -683,7 +757,7 @@
   }
 
   .button.loading {
-    opacity: .75;
+    opacity: 0.75;
     pointer-events: none;
   }
 

@@ -33,43 +33,34 @@ const mockVersion = [
 				<laneSet id="sid-b167d0d7-e761-4636-9200-76b7f0e8e83a">
 					<lane id="sid-57E4FE0D-18E4-478D-BC5D-B15164E93254">
 						<flowNodeRef>sid-52EB1772-F36E-433E-8F5B-D5DFD26E6F26</flowNodeRef>
-						<flowNodeRef>sid-E49425CF-8287-4798-B622-D2A7D78EF00B</flowNodeRef>
 						<flowNodeRef>sid-D7F237E8-56D0-4283-A3CE-4F0EFE446138</flowNodeRef>
-						<flowNodeRef>sid-E433566C-2289-4BEB-A19C-1697048900D2</flowNodeRef>
 						<flowNodeRef>sid-5134932A-1863-4FFA-BB3C-A4B4078B11A9</flowNodeRef>
-						<flowNodeRef>SCAN_OK</flowNodeRef>
+						<flowNodeRef>Event_1vafvd8</flowNodeRef>
+						<flowNodeRef>Event_1c4yc0d</flowNodeRef>
 					</lane>
 				</laneSet>
 				<task id="sid-52EB1772-F36E-433E-8F5B-D5DFD26E6F26" name="Scan QR code">
 					<incoming>sid-4DC479E5-5C20-4948-BCFC-9EC5E2F66D8D</incoming>
-					<outgoing>sid-EE8A7BA0-5D66-4F8B-80E3-CC2751B3856A</outgoing>
-				</task>
-				<task id="sid-E49425CF-8287-4798-B622-D2A7D78EF00B" name="Open product information in mobile  app">
-					<incoming>sid-8B820AF5-DC5C-4618-B854-E08B71FB55CB</incoming>
-					<outgoing>sid-57EB1F24-BD94-479A-BF1F-57F1EAA19C6C</outgoing>
+					<outgoing>Flow_1ucx5i0</outgoing>
 				</task>
 				<startEvent id="sid-D7F237E8-56D0-4283-A3CE-4F0EFE446138" name="Notices&#10;QR code">
 					<outgoing>sid-7B791A11-2F2E-4D80-AFB3-91A02CF2B4FD</outgoing>
 				</startEvent>
-				<endEvent id="sid-E433566C-2289-4BEB-A19C-1697048900D2" name="Is informed">
-					<incoming>sid-57EB1F24-BD94-479A-BF1F-57F1EAA19C6C</incoming>
-				</endEvent>
 				<exclusiveGateway id="sid-5134932A-1863-4FFA-BB3C-A4B4078B11A9">
 					<incoming>sid-7B791A11-2F2E-4D80-AFB3-91A02CF2B4FD</incoming>
-					<incoming>sid-337A23B9-A923-4CCE-B613-3E247B773CCE</incoming>
 					<outgoing>sid-4DC479E5-5C20-4948-BCFC-9EC5E2F66D8D</outgoing>
+					<outgoing>Flow_0fsxl9p</outgoing>
 				</exclusiveGateway>
-				<exclusiveGateway id="SCAN_OK" name="Scan successful?&#10;">
-					<incoming>sid-EE8A7BA0-5D66-4F8B-80E3-CC2751B3856A</incoming>
-					<outgoing>sid-8B820AF5-DC5C-4618-B854-E08B71FB55CB</outgoing>
-					<outgoing>sid-337A23B9-A923-4CCE-B613-3E247B773CCE</outgoing>
-				</exclusiveGateway>
-				<sequenceFlow id="sid-337A23B9-A923-4CCE-B613-3E247B773CCE" name="Yes" sourceRef="SCAN_OK" targetRef="sid-5134932A-1863-4FFA-BB3C-A4B4078B11A9" />
 				<sequenceFlow id="sid-4DC479E5-5C20-4948-BCFC-9EC5E2F66D8D" sourceRef="sid-5134932A-1863-4FFA-BB3C-A4B4078B11A9" targetRef="sid-52EB1772-F36E-433E-8F5B-D5DFD26E6F26" />
-				<sequenceFlow id="sid-8B820AF5-DC5C-4618-B854-E08B71FB55CB" name="No" sourceRef="SCAN_OK" targetRef="sid-E49425CF-8287-4798-B622-D2A7D78EF00B" />
-				<sequenceFlow id="sid-57EB1F24-BD94-479A-BF1F-57F1EAA19C6C" sourceRef="sid-E49425CF-8287-4798-B622-D2A7D78EF00B" targetRef="sid-E433566C-2289-4BEB-A19C-1697048900D2" />
-				<sequenceFlow id="sid-EE8A7BA0-5D66-4F8B-80E3-CC2751B3856A" sourceRef="sid-52EB1772-F36E-433E-8F5B-D5DFD26E6F26" targetRef="SCAN_OK" />
 				<sequenceFlow id="sid-7B791A11-2F2E-4D80-AFB3-91A02CF2B4FD" sourceRef="sid-D7F237E8-56D0-4283-A3CE-4F0EFE446138" targetRef="sid-5134932A-1863-4FFA-BB3C-A4B4078B11A9" />
+				<endEvent id="Event_1vafvd8">
+					<incoming>Flow_0fsxl9p</incoming>
+				</endEvent>
+				<sequenceFlow id="Flow_0fsxl9p" sourceRef="sid-5134932A-1863-4FFA-BB3C-A4B4078B11A9" targetRef="Event_1vafvd8" />
+				<endEvent id="Event_1c4yc0d">
+					<incoming>Flow_1ucx5i0</incoming>
+				</endEvent>
+				<sequenceFlow id="Flow_1ucx5i0" sourceRef="sid-52EB1772-F36E-433E-8F5B-D5DFD26E6F26" targetRef="Event_1c4yc0d" />
 			</process>
 			<bpmndi:BPMNDiagram id="sid-74620812-92c4-44e5-949c-aa47393d3830">
 				<bpmndi:BPMNPlane id="sid-cdcae759-2af7-4a6d-bd02-53f3352a731d" bpmnElement="sid-c0e745ff-361e-4afb-8c8d-2a1fc32b1424">
@@ -88,24 +79,29 @@ const mockVersion = [
 							<omgdc:Bounds x="360.5" y="172" width="84" height="12" />
 						</bpmndi:BPMNLabel>
 					</bpmndi:BPMNShape>
-					<bpmndi:BPMNShape id="sid-E49425CF-8287-4798-B622-D2A7D78EF00B_gui" bpmnElement="sid-E49425CF-8287-4798-B622-D2A7D78EF00B">
-						<omgdc:Bounds x="728" y="170" width="100" height="80" />
-						<bpmndi:BPMNLabel labelStyle="sid-84cb49fd-2f7c-44fb-8950-83c3fa153d3b">
-							<omgdc:Bounds x="695.9285736083984" y="162" width="83.14285278320312" height="36" />
+					<bpmndi:BPMNShape id="StartEvent_0l6sgn0_di" bpmnElement="sid-D7F237E8-56D0-4283-A3CE-4F0EFE446138">
+						<omgdc:Bounds x="187" y="192" width="36" height="36" />
+						<bpmndi:BPMNLabel>
+							<omgdc:Bounds x="182" y="229" width="46" height="24" />
 						</bpmndi:BPMNLabel>
 					</bpmndi:BPMNShape>
-					<bpmndi:BPMNEdge id="sid-EE8A7BA0-5D66-4F8B-80E3-CC2751B3856A_gui" bpmnElement="sid-EE8A7BA0-5D66-4F8B-80E3-CC2751B3856A">
-						<omgdi:waypoint x="493" y="210" />
-						<omgdi:waypoint x="585" y="210" />
+					<bpmndi:BPMNShape id="ExclusiveGateway_1g0eih2_di" bpmnElement="sid-5134932A-1863-4FFA-BB3C-A4B4078B11A9" isMarkerVisible="true">
+						<omgdc:Bounds x="275" y="185" width="50" height="50" />
 						<bpmndi:BPMNLabel>
-							<omgdc:Bounds x="494" y="185" width="90" height="20" />
+							<omgdc:Bounds x="210" y="160" width="90" height="12" />
 						</bpmndi:BPMNLabel>
-					</bpmndi:BPMNEdge>
-					<bpmndi:BPMNEdge id="sid-8B820AF5-DC5C-4618-B854-E08B71FB55CB_gui" bpmnElement="sid-8B820AF5-DC5C-4618-B854-E08B71FB55CB">
-						<omgdi:waypoint x="635" y="210" />
-						<omgdi:waypoint x="728" y="210" />
-						<bpmndi:BPMNLabel labelStyle="sid-e0502d32-f8d1-41cf-9c4a-cbb49fecf581">
-							<omgdc:Bounds x="642" y="185" width="16" height="12" />
+					</bpmndi:BPMNShape>
+					<bpmndi:BPMNShape id="Event_1vafvd8_di" bpmnElement="Event_1vafvd8">
+						<omgdc:Bounds x="402" y="302" width="36" height="36" />
+					</bpmndi:BPMNShape>
+					<bpmndi:BPMNShape id="Event_1c4yc0d_di" bpmnElement="Event_1c4yc0d">
+						<omgdc:Bounds x="562" y="192" width="36" height="36" />
+					</bpmndi:BPMNShape>
+					<bpmndi:BPMNEdge id="sid-4DC479E5-5C20-4948-BCFC-9EC5E2F66D8D_gui" bpmnElement="sid-4DC479E5-5C20-4948-BCFC-9EC5E2F66D8D">
+						<omgdi:waypoint x="325" y="210" />
+						<omgdi:waypoint x="393" y="210" />
+						<bpmndi:BPMNLabel>
+							<omgdc:Bounds x="314" y="185" width="90" height="20" />
 						</bpmndi:BPMNLabel>
 					</bpmndi:BPMNEdge>
 					<bpmndi:BPMNEdge id="sid-7B791A11-2F2E-4D80-AFB3-91A02CF2B4FD_gui" bpmnElement="sid-7B791A11-2F2E-4D80-AFB3-91A02CF2B4FD">
@@ -115,53 +111,15 @@ const mockVersion = [
 							<omgdc:Bounds x="204" y="185" width="90" height="20" />
 						</bpmndi:BPMNLabel>
 					</bpmndi:BPMNEdge>
-					<bpmndi:BPMNEdge id="sid-4DC479E5-5C20-4948-BCFC-9EC5E2F66D8D_gui" bpmnElement="sid-4DC479E5-5C20-4948-BCFC-9EC5E2F66D8D">
-						<omgdi:waypoint x="325" y="210" />
-						<omgdi:waypoint x="393" y="210" />
-						<bpmndi:BPMNLabel>
-							<omgdc:Bounds x="314" y="185" width="90" height="20" />
-						</bpmndi:BPMNLabel>
+					<bpmndi:BPMNEdge id="Flow_0fsxl9p_di" bpmnElement="Flow_0fsxl9p">
+						<omgdi:waypoint x="300" y="235" />
+						<omgdi:waypoint x="300" y="320" />
+						<omgdi:waypoint x="402" y="320" />
 					</bpmndi:BPMNEdge>
-					<bpmndi:BPMNEdge id="sid-57EB1F24-BD94-479A-BF1F-57F1EAA19C6C_gui" bpmnElement="sid-57EB1F24-BD94-479A-BF1F-57F1EAA19C6C">
-						<omgdi:waypoint x="828" y="210" />
-						<omgdi:waypoint x="901" y="210" />
-						<bpmndi:BPMNLabel>
-							<omgdc:Bounds x="820" y="185" width="90" height="20" />
-						</bpmndi:BPMNLabel>
+					<bpmndi:BPMNEdge id="Flow_1ucx5i0_di" bpmnElement="Flow_1ucx5i0">
+						<omgdi:waypoint x="493" y="210" />
+						<omgdi:waypoint x="562" y="210" />
 					</bpmndi:BPMNEdge>
-					<bpmndi:BPMNEdge id="sid-337A23B9-A923-4CCE-B613-3E247B773CCE_gui" bpmnElement="sid-337A23B9-A923-4CCE-B613-3E247B773CCE">
-						<omgdi:waypoint x="611" y="234" />
-						<omgdi:waypoint x="610.5" y="299" />
-						<omgdi:waypoint x="300.5" y="299" />
-						<omgdi:waypoint x="301" y="234" />
-						<bpmndi:BPMNLabel labelStyle="sid-e0502d32-f8d1-41cf-9c4a-cbb49fecf581">
-							<omgdc:Bounds x="585" y="236" width="21" height="12" />
-						</bpmndi:BPMNLabel>
-					</bpmndi:BPMNEdge>
-					<bpmndi:BPMNShape id="StartEvent_0l6sgn0_di" bpmnElement="sid-D7F237E8-56D0-4283-A3CE-4F0EFE446138">
-						<omgdc:Bounds x="187" y="192" width="36" height="36" />
-						<bpmndi:BPMNLabel>
-							<omgdc:Bounds x="182" y="229" width="46" height="24" />
-						</bpmndi:BPMNLabel>
-					</bpmndi:BPMNShape>
-					<bpmndi:BPMNShape id="EndEvent_0xwuvv5_di" bpmnElement="sid-E433566C-2289-4BEB-A19C-1697048900D2">
-						<omgdc:Bounds x="901" y="192" width="36" height="36" />
-						<bpmndi:BPMNLabel>
-							<omgdc:Bounds x="892" y="231" width="56" height="12" />
-						</bpmndi:BPMNLabel>
-					</bpmndi:BPMNShape>
-					<bpmndi:BPMNShape id="ExclusiveGateway_1g0eih2_di" bpmnElement="sid-5134932A-1863-4FFA-BB3C-A4B4078B11A9" isMarkerVisible="true">
-						<omgdc:Bounds x="275" y="185" width="50" height="50" />
-						<bpmndi:BPMNLabel>
-							<omgdc:Bounds x="210" y="160" width="90" height="12" />
-						</bpmndi:BPMNLabel>
-					</bpmndi:BPMNShape>
-					<bpmndi:BPMNShape id="ExclusiveGateway_0vci1x5_di" bpmnElement="SCAN_OK" isMarkerVisible="true">
-						<omgdc:Bounds x="585" y="185" width="50" height="50" />
-						<bpmndi:BPMNLabel>
-							<omgdc:Bounds x="568" y="157" width="88" height="24" />
-						</bpmndi:BPMNLabel>
-					</bpmndi:BPMNShape>
 				</bpmndi:BPMNPlane>
 				<bpmndi:BPMNLabelStyle id="sid-e0502d32-f8d1-41cf-9c4a-cbb49fecf581">
 					<omgdc:Font name="Arial" size="11" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" />
@@ -170,8 +128,7 @@ const mockVersion = [
 					<omgdc:Font name="Arial" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" />
 				</bpmndi:BPMNLabelStyle>
 			</bpmndi:BPMNDiagram>
-		</definitions>
-		`
+		</definitions>`
   }
 ];
 
@@ -194,9 +151,9 @@ export class MockBPMNService implements BPMNService {
   async delete(id: string): Promise<void> {
     return;
   }
-	async getVersions(id:string): Promise<number[]> {
-		return [1, 2, 3];
-	}
+  async getVersions(id: string): Promise<number[]> {
+    return [1, 2, 3];
+  }
   async getVersion(id: string, version: number): Promise<BPMNVersion> {
     return mockVersion[0];
   }
@@ -204,20 +161,50 @@ export class MockBPMNService implements BPMNService {
     return;
   }
   async updateVersion(id: string, version: number, item: { xml: string }): Promise<void> {
-		console.log(item.xml)
+    console.log(item.xml);
     return;
   }
   async deleteVersion(id: string, version: number): Promise<void> {
     return;
   }
 
-	async getDMNs(): Promise<Array<{id: string, name: string, versions: number[]}>> {
-		return [{name: '123', id: '11', versions: [1, 3]}, {name: '44423', id: '11323', versions: [1]}]
-	}
+  async getDMNs(): Promise<Array<{ id: string; name: string; versions: number[] }>> {
+    return [
+      { name: '123', id: '11', versions: [1, 3] },
+      { name: '44423', id: '11323', versions: [1] }
+    ];
+  }
 
-	getServices(): Promise<Array<{service: string, url: string}>> {
-		return [{service: 'http', url: 'testurl.com'}, {service: 'dmn', url: 'testurl2.com'}]
-	}
+  getServices(): Promise<BPMNModelService[]> {
+    return [
+      {
+				name: 'HTTP',
+				id: 'http',
+				url: 'testurl.com',
+				configFields: [
+					{
+						component: 'jp-select',
+						field: '/method',
+						options: {
+							label: 'Method',
+							options: [
+								{label: 'GET', value: 'GET'},
+								{label: 'POST', value: 'POST'},
+								{label: 'PUT', value: 'PUT'},
+								{label: 'PATCH', value: 'PATCH'},
+								{label: 'DELETE', value: 'DELETE'},
+							]
+						}
+					},
+				]
+			},
+      {
+				name: 'DMN',
+				id: 'dmn',
+				url: 'testurl2.com'
+			}
+    ];
+  }
 
   async getTriggers(): Promise<BPMNTrigger[]> {
     return [
@@ -225,13 +212,13 @@ export class MockBPMNService implements BPMNService {
         id: 'document-created',
         name: 'Document Created',
         description: `Triggered when a new document is created.`,
-				versions: [1, 2]
+        versions: [1, 2]
       },
       {
         id: 'document-deleted',
         name: 'Document Deleted',
         description: `Triggered when a document is deleted.`,
-				versions: [2, 3]
+        versions: [2, 3]
       }
     ];
   }

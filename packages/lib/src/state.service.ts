@@ -1,1 +1,1 @@
-export const state: any = {}
+export const state: any = {};

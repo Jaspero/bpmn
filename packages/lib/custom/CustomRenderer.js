@@ -1,23 +1,16 @@
 import BaseRenderer from 'diagram-js/lib/draw/BaseRenderer';
 
-import { restIcon, dmnIcon } from './icons.js'
+import { restIcon, dmnIcon } from './icons.js';
 
-import {
-  append as svgAppend,
-  attr as svgAttr,
-  create as svgCreate
-} from 'tiny-svg';
+import { append as svgAppend, attr as svgAttr, create as svgCreate } from 'tiny-svg';
 
-import {
-  getRoundRectPath
-} from 'bpmn-js/lib/draw/BpmnRenderUtil';
+import { getRoundRectPath } from 'bpmn-js/lib/draw/BpmnRenderUtil';
 
 import { is } from 'bpmn-js/lib/util/ModelUtil';
 import { isAny } from 'bpmn-js/lib/features/modeling/util/ModelingUtil';
 
 const HIGH_PRIORITY = 1500,
-      TASK_BORDER_RADIUS = 2;
-
+  TASK_BORDER_RADIUS = 2;
 
 export default class CustomRenderer extends BaseRenderer {
   constructor(eventBus, bpmnRenderer) {
@@ -28,33 +21,33 @@ export default class CustomRenderer extends BaseRenderer {
 
   canRender(element) {
     // only render service tasks (ignore labels)
-    return isAny(element, [ 'bpmn:ServiceTask' ]) && !element.labelTarget;
+    return isAny(element, ['bpmn:ServiceTask']) && !element.labelTarget;
   }
 
   drawShape(parentNode, element) {
     const shape = this.bpmnRenderer.drawShape(parentNode, element);
 
     if (is(element, 'bpmn:ServiceTask')) {
-      let href = ''
+      let href = '';
 
-      if(element.id.includes('jphttp')){
-        href = restIcon
+      if (element.id.includes('jphttp')) {
+        href = restIcon;
       }
 
-      if(element.id.includes('jpdmn')){
-        href = dmnIcon
+      if (element.id.includes('jpdmn')) {
+        href = dmnIcon;
       }
 
-      const img = svgCreate('image')
+      const img = svgCreate('image');
       svgAttr(img, {
         href,
         width: 18,
         height: 18,
         x: element.width - 25,
         y: 5
-      })
+      });
 
-      svgAppend(parentNode, img)
+      svgAppend(parentNode, img);
 
       return shape;
     }
@@ -71,4 +64,4 @@ export default class CustomRenderer extends BaseRenderer {
   }
 }
 
-CustomRenderer.$inject = [ 'eventBus', 'bpmnRenderer' ];
+CustomRenderer.$inject = ['eventBus', 'bpmnRenderer'];
