@@ -51,7 +51,7 @@
   "dependencies": {
     "@jaspero/modular": "1.17.0",
     "@jaspero/utils": "1.12.0",
-    "@jaspero/web-components": "1.60.2",
+    "@jaspero/web-components": "1.62.0",
     "base32": "0.0.7",
     "bpmn-js": "14.0.0",
     "diagram-js": "12.3.0"

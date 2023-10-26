@@ -114,6 +114,7 @@
           implementation: '${environment.services.defaultServiceRun()}'
         });
       }
+
       newId =
         newId +
         'jpservice' +
@@ -143,7 +144,7 @@
     switch (selection.type) {
       case 'service': {
         const service = services.find((it) => it.id === selection.value.service);
-        const newId =
+        const id =
           random.string(24) +
           'jpservice' +
           base32.encode(
@@ -154,9 +155,8 @@
             })
           );
 
-        modeling.updateProperties(el, {
-          id: newId
-        });
+        modeling.updateProperties(el, {id});
+        selection.id = id;
         break;
       }
       case 'condition': {
