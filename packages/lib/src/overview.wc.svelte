@@ -14,7 +14,7 @@
 
   export let bpmnService: BPMNService;
   export let buttonColor: 'primary' | 'secondary' = 'primary';
-  export let subscriptionLink: (version: number) => string;
+  export let subscriptionLink: (row: BPMN) => string;
 
   const dispatch = createEventDispatcher();
 
@@ -187,7 +187,7 @@
             </td>
             <td>
               {#if item.version}
-                {@html (subscriptionLink ? subscriptionLink(item.version) : `v${item.version}`)}
+                {@html (subscriptionLink ? subscriptionLink(item) : `v${item.version}`)}
               {:else}
                 -
               {/if}
