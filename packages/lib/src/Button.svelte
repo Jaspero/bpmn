@@ -7,21 +7,11 @@
 
 {#if href}
   <a class={variant} class:loading {href}>
-    {#if loading}
-        <div class="loading-spinner" />
-        Loading...
-    {:else}
       <slot />
-    {/if}
   </a>
 {:else}
   <button {type} class={variant} class:loading on:click>
-    {#if loading}
-        <div class="loading-spinner" />
-        Loading...
-    {:else}
       <slot />
-    {/if}
   </button>
 {/if}
 

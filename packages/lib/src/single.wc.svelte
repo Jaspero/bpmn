@@ -164,7 +164,7 @@
           body: '<![CDATA[next(null, ' + selection.value.config.condition + ');]]>'
         });
 
-        modeling.updateProperties(el, { 
+        modeling.updateProperties(el, {
           conditionExpression: condition
         });
 
@@ -298,12 +298,7 @@
       >Back</button
     >
     <button class="button button-filled {buttonColor}" class:loading={saveLoading} on:click={save}>
-      {#if !saveLoading}
         Save
-      {:else}
-        <span class="loading-spinner"></span>
-        Loading...
-      {/if}
     </button>
   </nav>
 
@@ -439,7 +434,7 @@
     -ms-flex-direction: column;
     flex-direction: column;
     width: 100%;
-    height: 100%;
+    height: calc(100vh - 64px);
   }
 
   .navigation {
@@ -482,7 +477,8 @@
   .sidebar {
     border-left: 2px solid var(--border-primary);
     white-space: nowrap;
-    overflow: hidden;
+    overflow-y: auto;
+    height: calc(100vh - 138px);
   }
 
   .sidebar:not(.open) {
