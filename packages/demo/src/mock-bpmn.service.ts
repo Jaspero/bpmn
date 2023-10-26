@@ -1,7 +1,10 @@
 import type { BPMNVersion } from '../../../dist/lib/types/BPMN-version.interface';
 import type { BPMN } from '../../../dist/lib/types/BPMN.interface';
 import type { BPMNService } from '../../../dist/lib/types/BPMN.service';
+import type { BPMNTestData } from '../../../dist/lib/types/bpmn-test-data.interface';
 import type { BPMNTrigger } from '../../../dist/lib/types/bpmn-trigger.interface';
+import type { BPMNTestRunOutput } from '../../../dist/lib/types/bpmn-test-run-output.interface';
+import {random} from '@jaspero/utils';
 
 const mockItems = [
   {
@@ -122,10 +125,10 @@ export class MockBPMNService implements BPMNService {
   getServices(): Promise<BPMNModelService[]> {
     return [
       {
-				name: 'HTTP',
-				id: 'http',
-				url: 'testurl.com',
-				configFields: [
+        name: 'HTTP',
+        id: 'http',
+        url: 'testurl.com',
+        configFields: [
           {
             component: 'jp-input',
             field: '/url',
@@ -134,25 +137,25 @@ export class MockBPMNService implements BPMNService {
               type: 'url'
             }
           },
-					{
-						component: 'jp-select',
-						field: '/method',
-						options: {
-							label: 'Method',
-							options: [
-								{label: 'GET', value: 'GET'},
-								{label: 'POST', value: 'POST'},
-								{label: 'PUT', value: 'PUT'},
-								{label: 'PATCH', value: 'PATCH'},
-								{label: 'DELETE', value: 'DELETE'},
-							]
-						}
-					},
+          {
+            component: 'jp-select',
+            field: '/method',
+            options: {
+              label: 'Method',
+              options: [
+                { label: 'GET', value: 'GET' },
+                { label: 'POST', value: 'POST' },
+                { label: 'PUT', value: 'PUT' },
+                { label: 'PATCH', value: 'PATCH' },
+                { label: 'DELETE', value: 'DELETE' }
+              ]
+            }
+          },
           {
             component: 'jp-json-editor',
             field: '/headers',
             options: {
-              label: 'Headers',
+              label: 'Headers'
             }
           },
           {
@@ -162,13 +165,13 @@ export class MockBPMNService implements BPMNService {
               label: 'Body'
             }
           }
-				]
-			},
+        ]
+      },
       {
-				name: 'DMN',
-				id: 'dmn',
-				url: 'testurl2.com'
-			}
+        name: 'DMN',
+        id: 'dmn',
+        url: 'testurl2.com'
+      }
     ];
   }
 
@@ -187,5 +190,53 @@ export class MockBPMNService implements BPMNService {
         versions: [2, 3]
       }
     ];
+  }
+
+  async getTestData(bpmnId: string): Promise<BPMNTestData[]> {
+    return [
+      {
+        id: '1',
+        name: 'First Set',
+        lastUpdatedOn: Date.now(),
+        data: {
+          name: 'John',
+          age: 10
+        }
+      },
+      {
+        id: '2',
+        name: 'Set Two',
+        lastUpdatedOn: Date.now(),
+        data: {
+          name: 'Steven',
+          age: 20
+        }
+      }
+    ];
+  }
+
+  async createTestData(bpmnId: string, data: {name: string; data: any;}): Promise<BPMNTestData> {
+    return {
+      ...data,
+      lastUpdatedOn: Date.now(),
+      id: random.string(24)
+    }
+  }
+
+  async updateTestData(bpmnId: string, dataId: string, data: any): Promise<void> {
+    return;
+  }
+
+  async deleteTestData(bpmnId: string, dataId: string): Promise<void> {
+    return;
+  }
+
+  async testRun(model: string, data: any): Promise<BPMNTestRunOutput> {
+    return {
+      duration: 2000,
+      output: {
+        name: 'Stuffy Stuffers'
+      }
+    };
   }
 }

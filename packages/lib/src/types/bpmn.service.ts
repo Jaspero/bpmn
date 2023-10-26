@@ -1,4 +1,6 @@
-import type {BPMNModelService} from './bpmn-model-service.interface';
+import type { BPMNModelService } from './bpmn-model-service.interface';
+import type { BPMNTestData } from './bpmn-test-data.interface';
+import type { BPMNTestRunOutput } from './bpmn-test-run-output.interface';
 import type { BPMNTrigger } from './bpmn-trigger.interface';
 import type { BPMNVersion } from './bpmn-version.interface';
 import type { BPMN } from './bpmn.interface';
@@ -51,4 +53,14 @@ export interface BPMNService {
   ): Promise<void>;
 
   deleteVersion(id: string, version: number): Promise<void>;
+
+  getTestData(bpmnId: string): Promise<BPMNTestData[]>;
+
+  createTestData(bpmnId: string, data: {name: string; data: any}): Promise<BPMNTestData>;
+
+  updateTestData(bpmnId: string, dataId: string, data: {name: string; data: any}): Promise<void>;
+
+  deleteTestData(bpmnId: string, dataId: string): Promise<void>;
+
+  testRun(model: string, data: any): Promise<BPMNTestRunOutput>;
 }

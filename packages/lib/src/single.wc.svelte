@@ -18,6 +18,8 @@
   import { state } from './state.service';
   import type { BPMNModelService } from './types/bpmn-model-service.interface';
   import FormModule from './FormModule.svelte';
+  import { clickOutside } from './click-outside';
+  import type { BPMNTestData } from './types/bpmn-test-data.interface';
 
   export let bpmnService: BPMNService;
   export let id: string;
@@ -54,6 +56,50 @@
   let selectedTriggerVersion: string;
 
   let saveLoading = false;
+
+  let testDataFields = [
+    {
+      component: 'jp-input',
+      field: '/id',
+      options: {
+        label: 'ID',
+        disabled: true
+      }
+    },
+    {
+      component: 'jp-datepicker',
+      field: '/lastUpdatedOn',
+      options: {
+        label: 'Last Updated',
+        disabled: true
+      }
+    },
+    {
+      component: 'jp-input',
+      field: '/name',
+      options: {
+        label: 'Name'
+      }
+    },
+    {
+      component: 'jp-json-editor',
+      field: '/data',
+      options: {
+        label: 'Data'
+      }
+    }
+  ];
+  let testRunOpen = false;
+  let selectedTestData: Partial<BPMNTestData>;
+  let testDataLoding = false;
+  let testData: BPMNTestData[];
+  let testDeleteIndex: number | null;
+  let testDataOutput: {
+    error?: string;
+    duration?: number;
+    output?: any;
+  } | null;
+  let testRunning = false;
 
   $: if (versionInstance) {
     versionInstance.trigger = `${selectedTrigger}-v${selectedTriggerVersion}`;
@@ -155,7 +201,7 @@
             })
           );
 
-        modeling.updateProperties(el, {id});
+        modeling.updateProperties(el, { id });
         selection.id = id;
         break;
       }
@@ -184,6 +230,60 @@
       ...(config || {})
     };
     sidebar = true;
+  }
+
+  function openTestRunDialog() {
+    testDataOutput = null;
+    selectedTestData = {
+      name: '',
+      data: {}
+    };
+    testRunOpen = true;
+
+    if (!testData) {
+      testDataLoding = true;
+
+      bpmnService.getTestData(id).then((data) => {
+        testData = data;
+        testDataLoding = false;
+      });
+    }
+  }
+
+  async function deleteTestItem(testDataId: string, index: number) {
+    testDeleteIndex = index;
+    await bpmnService.deleteTestData(id, testDataId);
+    testData.splice(index, 1);
+    testData = [...testData];
+    testDeleteIndex = null;
+  }
+
+  function selectTestData(test: BPMNTestData) {
+    selectedTestData = test;
+    testDataFields = [...testDataFields];
+  }
+
+  async function testRun() {
+    testRunning = true;
+
+    if (selectedTestData.id) {
+      await bpmnService.updateTestData(id, selectedTestData.id, {
+        name: selectedTestData.name,
+        data: selectedTestData.data
+      });
+    } else {
+      const dt = await bpmnService.createTestData(id, {
+        name: selectedTestData.name,
+        data: selectedTestData.data
+      });
+      testData.push(dt);
+    }
+
+    const { xml } = await modeler.saveXML({ format: true });
+
+    testDataOutput = await bpmnService.testRun(xml, selectedTestData.data);
+
+    testRunning = false;
   }
 
   onMount(async () => {
@@ -265,7 +365,10 @@
               ],
               value: {
                 config: {
-                  condition: e.element?.businessObject?.conditionExpression?.body.replace(/<!\[CDATA\[next\(null, (.*)\)\;]]>/, '$1')
+                  condition: e.element?.businessObject?.conditionExpression?.body.replace(
+                    /<!\[CDATA\[next\(null, (.*)\)\;]]>/,
+                    '$1'
+                  )
                 }
               }
             });
@@ -297,9 +400,16 @@
     <button class="button button-outlined {buttonColor}" on:click={() => dispatch('back')}
       >Back</button
     >
-    <button class="button button-filled {buttonColor}" class:loading={saveLoading} on:click={save}>
+    <div>
+      <button class="button {buttonColor}" on:click={() => openTestRunDialog()}>Test Run</button>
+      <button
+        class="button button-filled {buttonColor}"
+        class:loading={saveLoading}
+        on:click={save}
+      >
         Save
-    </button>
+      </button>
+    </div>
   </nav>
 
   <div class="canvas-container">
@@ -419,6 +529,73 @@
   </div>
 </div>
 
+{#if testRunOpen}
+  <div class="dialog-overlay">
+    <div class="dialog" use:clickOutside={true} on:click_outside={() => (testRunOpen = false)}>
+      <div class="dialog-header">
+        <h2 class="dialog-header-title">Test Run</h2>
+        <button class="dialog-header-close" on:click={() => (testRunOpen = false)}>
+          <span class="material-symbols-outlined"> close </span>
+        </button>
+      </div>
+
+      <div class="dialog-grid">
+        {#if testDataOutput}
+          <p>Test Run {testDataOutput.error ? 'Failed' : 'Successful'}</p>
+          {#if testDataOutput.error}
+            <p>Error {testDataOutput.error}</p>
+          {:else}
+            <p>Duration {testDataOutput.duration}ms</p>
+            <p>Output {JSON.stringify(testDataOutput.output, null, 2)}</p>
+          {/if}
+        {:else if testDataLoding}
+          <p>Loading...</p>
+        {:else}
+          {#if testData.length}
+            <table>
+              <tr>
+                <th>Name</th>
+                <th>Last Updated On</th>
+                <th></th>
+                <th></th>
+              </tr>
+              {#each testData as test, index}
+                <tr>
+                  <td>{test.name}</td>
+                  <td>{new Date(test.lastUpdatedOn).toLocaleString()}</td>
+                  <td>
+                    <button
+                      class="button-outlined {buttonColor}"
+                      class:loading={index === testDeleteIndex}
+                      on:click={() => deleteTestItem(test.id, index)}>Delete</button
+                    >
+                  </td>
+                  <td>
+                    <button
+                      class="button-filled {buttonColor}"
+                      class:active={selectedTestData.id === test.id}
+                      on:click={() => selectTestData(test)}>Select</button
+                    >
+                  </td>
+                </tr>
+              {/each}
+            </table>
+          {/if}
+
+          <FormModule
+            items={testDataFields}
+            bind:value={selectedTestData}
+          />
+
+          <button class="button-filled {buttonColor}" class:loading={testRunning} on:click={testRun}
+            >Run</button
+          >
+        {/if}
+      </div>
+    </div>
+  </div>
+{/if}
+
 <style>
   .layout {
     display: -webkit-box;
@@ -451,6 +628,10 @@
     background-color: var(--background-primary);
     padding: 1rem;
     border-bottom: 2px solid var(--border-primary);
+  }
+
+  .navigation > div {
+    display: flex;
   }
 
   .canvas-container {
@@ -843,5 +1024,167 @@
       -o-transform: rotate(360deg);
       transform: rotate(360deg);
     }
+  }
+
+  /* Dialog */
+  .dialog-overlay {
+    z-index: 20;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.25);
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -moz-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+  }
+
+  .dialog {
+    background-color: var(--background-primary);
+    -webkit-border-radius: 0.25rem;
+    -moz-border-radius: 0.25rem;
+    border-radius: 0.25rem;
+  }
+
+  .dialog-header {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    -moz-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-primary);
+  }
+
+  .dialog-header-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  .dialog-header-close {
+    min-width: 2rem;
+    max-width: 2rem;
+    min-height: 2rem;
+    max-height: 2rem;
+    padding: 0;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -moz-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    border-radius: 50%;
+    -webkit-transition: background-color 0.3s;
+    -o-transition: background-color 0.3s;
+    -moz-transition: background-color 0.3s;
+    transition: background-color 0.3s;
+  }
+
+  .dialog-header-close:hover {
+    background-color: var(--background-tertiary);
+  }
+
+  .dialog-actions {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-top: 1px solid var(--border-primary);
+  }
+
+  .dialog-grid {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    padding: 0.5rem 0;
+  }
+
+  .dialog-grid-item {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    padding: 0.5rem 1rem;
+  }
+
+  .dialog-grid-item:not(.inline) {
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -moz-box-orient: vertical;
+    -moz-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+  }
+
+  .dialog-grid-item.inline {
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    -moz-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .dialog-grid-item:not(.half) {
+    width: 100%;
+  }
+
+  .dialog-grid-item.half {
+    width: 50%;
   }
 </style>

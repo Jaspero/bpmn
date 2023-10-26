@@ -36,7 +36,6 @@
 
     const schema = new ModularSchema({});
     const instance = schema.createInstance(value || {});
-
     const view = new ModularView({
       componentPrefix: '',
       schema,
