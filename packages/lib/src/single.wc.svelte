@@ -557,31 +557,31 @@
                 <th>Name</th>
                 <th>Last Updated On</th>
                 <th></th>
-                <th></th>
               </tr>
               {#each testData as test, index}
                 <tr>
                   <td>{test.name}</td>
                   <td>{new Date(test.lastUpdatedOn).toLocaleString()}</td>
                   <td>
-                    <button
-                      class="button button-outlined icon {buttonColor}"
-                      class:loading={index === testDeleteIndex}
-                      on:click={() => deleteTestItem(test.id, index)}>
+                    <div class="flex justify-end gap-2">
+                      <button
+                              class="button button-outlined icon {buttonColor}"
+                              class:loading={index === testDeleteIndex}
+                              on:click={() => deleteTestItem(test.id, index)}>
                       <span class="material-symbols-outlined">
                       delete
                       </span>
-                    </button>
-                  </td>
-                  <td>
-                    <button
-                      class="button button-filled icon {buttonColor}"
-                      class:active={selectedTestData.id === test.id}
-                      on:click={() => selectTestData(test)}>
+                      </button>
+
+                      <button
+                              class="button button-filled icon {buttonColor}"
+                              class:active={selectedTestData.id === test.id}
+                              on:click={() => selectTestData(test)}>
                       <span class="material-symbols-outlined">
                       select
                       </span>
-                    </button>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               {/each}
@@ -1044,7 +1044,7 @@
 
   /* Dialog */
   .dialog-overlay {
-    z-index: 20;
+    z-index: 200;
     position: fixed;
     top: 0;
     left: 0;
@@ -1162,7 +1162,12 @@
   }
 
   .dialog-grid table {
-    width: fit-content;
+    width: 100%;
+    border: 1px solid #C4C4C4;
+  }
+  
+  .dialog-grid table tr:not(:first-child) {
+    border-top: 1px solid #C4C4C4;
   }
 
   .dialog-grid table tr th {
@@ -1171,12 +1176,15 @@
 
   .dialog-grid table tr th,
   .dialog-grid table tr td {
-    padding-top: 2px;
-    padding-bottom: 2px;
+    padding: .5rem;
   }
 
   .dialog-grid table tr td:not(:last-child) {
     padding-right: 1rem;
+  }
+
+  .dialog-grid table tr td:last-child {
+    text-align: right;
   }
 
   .dialog-grid-item {
