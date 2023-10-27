@@ -593,7 +593,7 @@
             bind:value={selectedTestData}
           />
 
-          <div class="mt-4">
+          <div class="flex justify-end mt-4">
             <button class="button button-filled {buttonColor}" class:loading={testRunning} on:click={testRun}>
               Run
             </button>

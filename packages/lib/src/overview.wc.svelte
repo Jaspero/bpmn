@@ -357,20 +357,21 @@
       <div class="dialog-grid">
         {#each versionsObj.versions as version}
           <div class="dialog-grid-item inline">
-            <span>Version: {version}</span>
-            <button
-              class="button-outlined {buttonColor}"
-              on:click={() => dispatch('editVersion', { id: versionsObj.id, version: version })}
-              >Edit</button
-            >
+            <span><b>Version</b>: {version}</span>
+            <div class="flex gap-2">
+              {#if version != versionsObj.version}
+                <button class="button button-filled {buttonColor}"
+                        class:loading={versionDelLoading}
+                        on:click={() => delVersion(versionsObj.id, version)}>
+                  Delete
+                </button>
+              {/if}
 
-            {#if version != versionsObj.version}
-              <button
-                class="button-filled {buttonColor}"
-                class:loading={versionDelLoading}
-                on:click={() => delVersion(versionsObj.id, version)}>Delete</button
-              >
-            {/if}
+              <button class="button button-outlined {buttonColor}"
+                      on:click={() => dispatch('editVersion', { id: versionsObj.id, version: version })}>
+                Edit
+              </button>
+            </div>
           </div>
         {/each}
       </div>
