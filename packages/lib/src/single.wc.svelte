@@ -400,8 +400,8 @@
     <button class="button button-outlined {buttonColor}" on:click={() => dispatch('back')}
       >Back</button
     >
-    <div>
-      <button class="button {buttonColor}" on:click={() => openTestRunDialog()}>Test Run</button>
+    <div class="flex gap-4">
+      <button class="button button-outlined {buttonColor}" on:click={() => openTestRunDialog()}>Test Run</button>
       <button
         class="button button-filled {buttonColor}"
         class:loading={saveLoading}
@@ -541,12 +541,12 @@
 
       <div class="dialog-grid">
         {#if testDataOutput}
-          <p>Test Run {testDataOutput.error ? 'Failed' : 'Successful'}</p>
+          <p><b>Test Run</b>: {testDataOutput.error ? 'Failed' : 'Successful'}</p>
           {#if testDataOutput.error}
-            <p>Error {testDataOutput.error}</p>
+            <p><b>Error</b>: {testDataOutput.error}</p>
           {:else}
-            <p>Duration {testDataOutput.duration}ms</p>
-            <p>Output {JSON.stringify(testDataOutput.output, null, 2)}</p>
+            <p><b>Duration</b>: {testDataOutput.duration}ms</p>
+            <p><b>Output</b>. {JSON.stringify(testDataOutput.output, null, 2)}</p>
           {/if}
         {:else if testDataLoding}
           <p>Loading...</p>
@@ -565,17 +565,23 @@
                   <td>{new Date(test.lastUpdatedOn).toLocaleString()}</td>
                   <td>
                     <button
-                      class="button-outlined {buttonColor}"
+                      class="button button-outlined icon {buttonColor}"
                       class:loading={index === testDeleteIndex}
-                      on:click={() => deleteTestItem(test.id, index)}>Delete</button
-                    >
+                      on:click={() => deleteTestItem(test.id, index)}>
+                      <span class="material-symbols-outlined">
+                      delete
+                      </span>
+                    </button>
                   </td>
                   <td>
                     <button
-                      class="button-filled {buttonColor}"
+                      class="button button-filled icon {buttonColor}"
                       class:active={selectedTestData.id === test.id}
-                      on:click={() => selectTestData(test)}>Select</button
-                    >
+                      on:click={() => selectTestData(test)}>
+                      <span class="material-symbols-outlined">
+                      select
+                      </span>
+                    </button>
                   </td>
                 </tr>
               {/each}
@@ -587,9 +593,11 @@
             bind:value={selectedTestData}
           />
 
-          <button class="button-filled {buttonColor}" class:loading={testRunning} on:click={testRun}
-            >Run</button
-          >
+          <div class="mt-4">
+            <button class="button button-filled {buttonColor}" class:loading={testRunning} on:click={testRun}>
+              Run
+            </button>
+          </div>
         {/if}
       </div>
     </div>
@@ -942,6 +950,14 @@
     opacity: 0.5;
   }
 
+  .button.icon {
+    min-width: 2rem;
+    min-height: 2rem;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+  }
+
   .button.button-outlined {
     border-width: 2px;
     border-style: solid;
@@ -1141,10 +1157,26 @@
     display: -moz-box;
     display: -ms-flexbox;
     display: flex;
-    -webkit-flex-wrap: wrap;
-    -ms-flex-wrap: wrap;
-    flex-wrap: wrap;
-    padding: 0.5rem 0;
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .dialog-grid table {
+    width: fit-content;
+  }
+
+  .dialog-grid table tr th {
+    text-align: left;
+  }
+
+  .dialog-grid table tr th,
+  .dialog-grid table tr td {
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+
+  .dialog-grid table tr td:not(:last-child) {
+    padding-right: 1rem;
   }
 
   .dialog-grid-item {
