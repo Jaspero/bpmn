@@ -647,10 +647,9 @@
 
                       <button
                         class="button button-filled icon {buttonColor}"
-                        class:active={selectedTestData.id === test.id}
                         on:click={() => selectTestData(test)}
                       >
-                        <span class="material-symbols-outlined"> select </span>
+                        <span class="material-symbols-outlined"> {selectedTestData.id === test.id ? 'select_check_box' : 'check_box_outline_blank'} </span>
                       </button>
                     </div>
                   </td>
