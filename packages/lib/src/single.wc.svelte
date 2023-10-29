@@ -68,14 +68,6 @@
       }
     },
     {
-      component: 'jp-datepicker',
-      field: '/lastUpdatedOn',
-      options: {
-        label: 'Last Updated',
-        disabled: true
-      }
-    },
-    {
       component: 'jp-input',
       field: '/name',
       options: {
