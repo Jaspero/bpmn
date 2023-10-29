@@ -105,7 +105,7 @@
   async function save() {
     saveLoading = true;
 
-    const { xml } = await modeler.saveXML({ format: true });
+    const xml = await getXml();
     const changes = Object.keys(instance).some((key) => instance[key] !== instanceBackup[key]);
 
     if (changes) {
@@ -276,7 +276,7 @@
       testData.push(dt);
     }
 
-    const { xml } = await modeler.saveXML({ format: true });
+    const xml = await getXml();
 
     testDataOutput = await bpmnService.testRun(xml, selectedTestData.data);
 
@@ -304,7 +304,7 @@
   }
 
   async function exportXml() {
-    const { xml } = await modeler.saveXML({ format: true });
+    const xml = await getXml();
 
     console.log('XML File');
     console.log(xml);
@@ -330,6 +330,11 @@
     reader.onload = (evt) => {
       modeler.importXML(evt.target.result);
     };
+  }
+
+  async function getXml() {
+    const { xml } = await modeler.saveXML({ format: true });
+    return xml.replace(/isExecutable="false"/g, 'isExecutable="true"');
   }
 
   onMount(async () => {
@@ -360,7 +365,9 @@
       keyboard: {
         bindTo: window
       },
-      additionalModules: [customRendererModule]
+      additionalModules: [
+        customRendererModule
+      ]
     });
 
     elementFactory = modeler.get('elementFactory');
