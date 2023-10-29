@@ -20,6 +20,7 @@
   import FormModule from './FormModule.svelte';
   import { clickOutside } from './click-outside';
   import type { BPMNTestData } from './types/bpmn-test-data.interface';
+  import { fly } from 'svelte/transition';
 
   export let bpmnService: BPMNService;
   export let id: string;
@@ -100,6 +101,10 @@
     output?: any;
   } | null;
   let testRunning = false;
+
+  let popup = false;
+  let popupMenuStyle: string;
+  let fileEl: HTMLInputElement;
 
   $: if (versionInstance) {
     versionInstance.trigger = `${selectedTrigger}-v${selectedTriggerVersion}`;
@@ -286,6 +291,55 @@
     testRunning = false;
   }
 
+  function togglePopup(event: PointerEvent) {
+    const rect = (event.target as HTMLButtonElement).getBoundingClientRect();
+    const availableSpaceBelow = window.innerHeight - rect.bottom;
+    const dropdownHeight = 160;
+
+    popupMenuStyle =
+      availableSpaceBelow < dropdownHeight
+        ? `
+        min-width: ${rect.width}px;
+        bottom: ${window.innerHeight - rect.top}px;
+        left: ${rect.right}px;
+      `
+        : `
+        min-width: ${rect.width}px;
+        top: ${rect.bottom}px;
+        left: ${rect.right}px;
+      `;
+    popup = true;
+  }
+
+  async function exportXml() {
+    const { xml } = await modeler.saveXML({ format: true });
+
+    console.log('XML File');
+    console.log(xml);
+
+    const blob = new Blob([xml], { type: 'text/xml' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  }
+
+  function importXml() {
+    fileEl.click();
+  }
+
+  function xmlSelected() {
+    const file = fileEl.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.readAsText(file, 'UTF-8');
+    reader.onload = (evt) => {
+      modeler.importXML(evt.target.result);
+    };
+  }
+
   onMount(async () => {
     state.service = bpmnService;
 
@@ -401,7 +455,9 @@
       >Back</button
     >
     <div class="flex gap-4">
-      <button class="button button-outlined {buttonColor}" on:click={() => openTestRunDialog()}>Test Run</button>
+      <button class="button button-outlined {buttonColor}" on:click={() => openTestRunDialog()}
+        >Test Run</button
+      >
       <button
         class="button button-filled {buttonColor}"
         class:loading={saveLoading}
@@ -409,6 +465,23 @@
       >
         Save
       </button>
+      <button title="More Options" class="actions-button" on:click|stopPropagation={togglePopup}>
+        <span class="material-symbols-outlined">more_vert</span>
+      </button>
+      {#if popup}
+        <div class="overlay">
+          <div
+            class="actions"
+            style={popupMenuStyle}
+            transition:fly={{ y: -15, duration: 250 }}
+            use:clickOutside
+            on:click_outside={() => (popup = null)}
+          >
+            <button class="button button-filled {buttonColor}" on:click={exportXml}>Export XML</button>
+            <button class="button button-outlined {buttonColor}" on:click={importXml}>Import XML</button>
+          </div>
+        </div>
+      {/if}
     </div>
   </nav>
 
@@ -565,21 +638,19 @@
                   <td>
                     <div class="flex justify-end gap-2">
                       <button
-                              class="button button-outlined icon {buttonColor}"
-                              class:loading={index === testDeleteIndex}
-                              on:click={() => deleteTestItem(test.id, index)}>
-                      <span class="material-symbols-outlined">
-                      delete
-                      </span>
+                        class="button button-outlined icon {buttonColor}"
+                        class:loading={index === testDeleteIndex}
+                        on:click={() => deleteTestItem(test.id, index)}
+                      >
+                        <span class="material-symbols-outlined"> delete </span>
                       </button>
 
                       <button
-                              class="button button-filled icon {buttonColor}"
-                              class:active={selectedTestData.id === test.id}
-                              on:click={() => selectTestData(test)}>
-                      <span class="material-symbols-outlined">
-                      select
-                      </span>
+                        class="button button-filled icon {buttonColor}"
+                        class:active={selectedTestData.id === test.id}
+                        on:click={() => selectTestData(test)}
+                      >
+                        <span class="material-symbols-outlined"> select </span>
                       </button>
                     </div>
                   </td>
@@ -588,13 +659,14 @@
             </table>
           {/if}
 
-          <FormModule
-            items={testDataFields}
-            bind:value={selectedTestData}
-          />
+          <FormModule items={testDataFields} bind:value={selectedTestData} />
 
           <div class="flex justify-end mt-4">
-            <button class="button button-filled {buttonColor}" class:loading={testRunning} on:click={testRun}>
+            <button
+              class="button button-filled {buttonColor}"
+              class:loading={testRunning}
+              on:click={testRun}
+            >
               Run
             </button>
           </div>
@@ -603,6 +675,8 @@
     </div>
   </div>
 {/if}
+
+<input type="file" hidden bind:this={fileEl} on:change={xmlSelected} />
 
 <style>
   .layout {
@@ -640,6 +714,7 @@
 
   .navigation > div {
     display: flex;
+    align-items: center;
   }
 
   .canvas-container {
@@ -1163,11 +1238,11 @@
 
   .dialog-grid table {
     width: 100%;
-    border: 1px solid #C4C4C4;
+    border: 1px solid #c4c4c4;
   }
-  
+
   .dialog-grid table tr:not(:first-child) {
-    border-top: 1px solid #C4C4C4;
+    border-top: 1px solid #c4c4c4;
   }
 
   .dialog-grid table tr th {
@@ -1176,7 +1251,7 @@
 
   .dialog-grid table tr th,
   .dialog-grid table tr td {
-    padding: .5rem;
+    padding: 0.5rem;
   }
 
   .dialog-grid table tr td:not(:last-child) {
@@ -1226,5 +1301,69 @@
 
   .dialog-grid-item.half {
     width: 50%;
+  }
+
+  .actions-button {
+    min-width: 32px;
+    max-width: 32px;
+    min-height: 32px;
+    max-height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    border-radius: 50%;
+    -webkit-transition: 0.3s;
+    -o-transition: 0.3s;
+    -moz-transition: 0.3s;
+    transition: 0.3s;
+  }
+
+  .actions-button:hover {
+    background-color: var(--primary-color);
+    color: var(--text-on-primary);
+  }
+
+  .actions-button .material-symbols-outlined {
+    pointer-events: none;
+  }
+
+  .overlay {
+    z-index: 100;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .actions {
+    position: fixed;
+    -webkit-transform: translateX(-100%);
+    -moz-transform: translateX(-100%);
+    -ms-transform: translateX(-100%);
+    -o-transform: translateX(-100%);
+    transform: translateX(-100%);
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -moz-box-orient: vertical;
+    -moz-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    gap: 0.5rem;
+    background-color: var(--background-primary);
+    border: 1px solid var(--border-primary);
+    padding: 0.75rem;
+    -webkit-border-radius: 0.25rem;
+    -moz-border-radius: 0.25rem;
+    border-radius: 0.25rem;
+    width: 160px;
   }
 </style>

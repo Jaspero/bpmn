@@ -53,28 +53,22 @@
   }
 
   function togglePopup(index: number) {
-    let rect = document.getElementById('togglePopup' + index).getBoundingClientRect();
-
+    const rect = document.getElementById('togglePopup' + index).getBoundingClientRect();
     const availableSpaceBelow = window.innerHeight - rect.bottom;
     const dropdownHeight = 160;
 
-    let style: string = '';
-
-    if (availableSpaceBelow < dropdownHeight) {
-      style = `
+    menuStyle =
+      availableSpaceBelow < dropdownHeight
+        ? `
         min-width: ${rect.width}px;
         bottom: ${window.innerHeight - rect.top}px;
         left: ${rect.right}px;
-      `;
-    } else {
-      style = `
+      `
+        : `
         min-width: ${rect.width}px;
         top: ${rect.bottom}px;
         left: ${rect.right}px;
       `;
-    }
-
-    menuStyle = style;
     popup = popup === index ? null : index;
   }
 
@@ -187,7 +181,7 @@
             </td>
             <td>
               {#if item.version}
-                {@html (subscriptionLink ? subscriptionLink(item) : `v${item.version}`)}
+                {@html subscriptionLink ? subscriptionLink(item) : `v${item.version}`}
               {:else}
                 -
               {/if}
@@ -360,15 +354,19 @@
             <span><b>Version</b>: {version}</span>
             <div class="flex gap-2">
               {#if version != versionsObj.version}
-                <button class="button button-filled {buttonColor}"
-                        class:loading={versionDelLoading}
-                        on:click={() => delVersion(versionsObj.id, version)}>
+                <button
+                  class="button button-filled {buttonColor}"
+                  class:loading={versionDelLoading}
+                  on:click={() => delVersion(versionsObj.id, version)}
+                >
                   Delete
                 </button>
               {/if}
 
-              <button class="button button-outlined {buttonColor}"
-                      on:click={() => dispatch('editVersion', { id: versionsObj.id, version: version })}>
+              <button
+                class="button button-outlined {buttonColor}"
+                on:click={() => dispatch('editVersion', { id: versionsObj.id, version: version })}
+              >
                 Edit
               </button>
             </div>
