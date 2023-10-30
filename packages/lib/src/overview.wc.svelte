@@ -11,6 +11,8 @@
   import { clickOutside } from './click-outside';
   import type { BPMN } from './types/bpmn.interface';
   import type { BPMNService } from './types/bpmn.service';
+  import '@jaspero/web-components/dist/confirm.wc';
+  import { renderConfirm } from '@jaspero/web-components/dist/render-confirm';
 
   export let bpmnService: BPMNService;
   export let buttonColor: 'primary' | 'secondary' = 'primary';
@@ -72,11 +74,24 @@
     popup = popup === index ? null : index;
   }
 
-  async function del(index: number, item: BPMN) {
-    await bpmnService.delete(item.id);
-    items.splice(index, 1);
-    items = [...items];
+  function del(index: number, item: BPMN) {
     popup = null;
+    renderConfirm(
+      {
+        title: 'Delete model',
+        message: 'Are you sure you want to delete this model?',
+        accept: 'Yes',
+        reject: 'No',
+        closable: true
+      },
+      async (e) => {
+        if(e.confirmed){
+          await bpmnService.delete(item.id);
+          items.splice(index, 1);
+          items = [...items];
+        }
+      }
+    );
   }
 
   async function delVersion(id: string, version: number) {
