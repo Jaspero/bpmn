@@ -264,7 +264,7 @@
         <h2 class="dialog-header-title">Filters</h2>
 
         <button class="dialog-header-close" on:click={() => (filters = false)}>
-          <span class="material-symbols-outlined"> close </span>
+          <span class="material-symbols-outlined">close</span>
         </button>
       </div>
 
@@ -358,7 +358,7 @@
       <div class="dialog-header">
         <h2 class="dialog-header-title">List of versions</h2>
 
-        <button class="dialog-header-close" on:click={() => (newDialog = false)}>
+        <button class="dialog-header-close" on:click={() => (versionsDialog = false)}>
           <span class="material-symbols-outlined"> close </span>
         </button>
       </div>
