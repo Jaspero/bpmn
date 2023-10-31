@@ -32,6 +32,7 @@
   let loadingVersions = false;
   let versionsDialog = false;
   let versionDelLoading = false;
+  let versionDelConfirm = false;
   let versionsObj = { id: '', versions: [], currentVersion: 0, versionsData: {} };
 
   let newDialog = false;
@@ -95,10 +96,25 @@
   }
 
   async function delVersion(id: string, version: number) {
-    versionDelLoading = true;
-    await bpmnService.deleteVersion(id, version);
-    versionsObj.versions = versionsObj.versions.filter((el) => el != version);
-    versionDelLoading = false;
+    versionDelConfirm = true;
+    renderConfirm(
+      {
+        title: 'Delete version',
+        message: 'Are you sure you want to delete this version?',
+        accept: 'Yes',
+        reject: 'No',
+        closable: true
+      },
+      async (e) => {
+        versionDelConfirm = false;
+        if (e.confirmed) {
+          versionDelLoading = true;
+          await bpmnService.deleteVersion(id, version);
+          versionsObj.versions = versionsObj.versions.filter((el) => el != version);
+          versionDelLoading = false;
+        }
+      }
+    );
   }
 
   function openCreate() {
@@ -359,7 +375,7 @@
     <form
       class="dialog"
       use:clickOutside={true}
-      on:click_outside={() => (versionsDialog = false)}
+      on:click_outside={() => {if(!versionDelConfirm) versionsDialog = false}}
       on:submit|preventDefault={create}
     >
       <div class="dialog-header">
@@ -782,7 +798,7 @@
 
   /* Dialog */
   .dialog-overlay {
-    z-index: 20;
+    z-index: 9;
     position: fixed;
     top: 0;
     left: 0;
