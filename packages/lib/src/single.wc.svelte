@@ -84,7 +84,7 @@
   ];
   let testRunOpen = false;
   let selectedTestData: Partial<BPMNTestData>;
-  let testDataLoding = false;
+  let testDataLoading = false;
   let testData: BPMNTestData[];
   let testDeleteIndex: number | null;
   let testDataOutput: {
@@ -238,11 +238,11 @@
     testRunOpen = true;
 
     if (!testData) {
-      testDataLoding = true;
+      testDataLoading = true;
 
       bpmnService.getTestData(id).then((data) => {
         testData = data;
-        testDataLoding = false;
+        testDataLoading = false;
       });
     }
   }
@@ -620,8 +620,10 @@
             <p><b>Duration</b>: {testDataOutput.duration}ms</p>
             <p><b>Output</b>. {JSON.stringify(testDataOutput.output, null, 2)}</p>
           {/if}
-        {:else if testDataLoding}
-          <p>Loading...</p>
+        {:else if testDataLoading}
+          <div class="loader-container">
+            <div class="loading-spinner"></div>
+          </div>
         {:else}
           {#if testData.length}
             <table>
@@ -1142,10 +1144,19 @@
   }
 
   .dialog {
+    display: flex;
+    flex-direction: column;
     background-color: var(--background-primary);
     -webkit-border-radius: 0.25rem;
     -moz-border-radius: 0.25rem;
     border-radius: 0.25rem;
+  }
+
+  @media (min-width: 601px) {
+    .dialog {
+      min-width: 600px;
+      min-height: 200px;
+    }
   }
 
   .dialog-header {
@@ -1231,6 +1242,7 @@
     display: -ms-flexbox;
     display: flex;
     flex-direction: column;
+    flex: 1 1 0;
     padding: 1rem;
   }
 
@@ -1363,5 +1375,13 @@
     -moz-border-radius: 0.25rem;
     border-radius: 0.25rem;
     width: 160px;
+  }
+
+  .loader-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 </style>
