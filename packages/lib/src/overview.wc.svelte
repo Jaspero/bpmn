@@ -32,7 +32,7 @@
   let loadingVersions = false;
   let versionsDialog = false;
   let versionDelLoading = false;
-  let versionsObj = { id: '', versions: [], version: 0 };
+  let versionsObj = { id: '', versions: [], currentVersion: 0, versionsData: {} };
 
   let newDialog = false;
   let newLoading = false;
@@ -85,7 +85,7 @@
         closable: true
       },
       async (e) => {
-        if(e.confirmed){
+        if (e.confirmed) {
           await bpmnService.delete(item.id);
           items.splice(index, 1);
           items = [...items];
@@ -142,8 +142,15 @@
     loadingVersions = true;
 
     versionsObj.id = id;
-    versionsObj.version = version;
+    versionsObj.currentVersion = version;
     versionsObj.versions = await bpmnService.getVersions(id);
+
+    await Promise.allSettled(
+      versionsObj.versions.map(async (v) => {
+        const vData = await bpmnService.getVersion(id, v);
+        versionsObj.versionsData[v] = { createdOn: vData.createdOn, trigger: vData.trigger };
+      })
+    );
 
     loadingVersions = false;
     versionsDialog = true;
@@ -363,30 +370,56 @@
         </button>
       </div>
 
-      <div class="dialog-grid">
-        {#each versionsObj.versions as version}
-          <div class="dialog-grid-item inline">
-            <span><b>Version</b>: {version}</span>
-            <div class="flex gap-2">
-              {#if version != versionsObj.version}
-                <button
-                  class="button button-filled {buttonColor}"
-                  class:loading={versionDelLoading}
-                  on:click={() => delVersion(versionsObj.id, version)}
-                >
-                  Delete
-                </button>
-              {/if}
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Version</th>
+              <th>Created on</th>
+              <th>Trigger</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each versionsObj.versions as version}
+              <tr>
+                <th>
+                  {version}
+                </th>
+                <th>
+                  {#if versionsObj.versionsData[version].createdOn}
+                    {new Date(versionsObj.versionsData[version].createdOn).toDateString()}
+                  {/if}
+                </th>
+                <th>
+                  {#if versionsObj.versionsData[version].trigger}
+                    {versionsObj.versionsData[version].trigger}
+                  {/if}
+                </th>
+                <th>
+                  <div class="flex gap-2">
+                    <button
+                      class="button button-filled {buttonColor}"
+                      class:loading={versionDelLoading}
+                      on:click={() => delVersion(versionsObj.id, version)}
+                      disabled={version == versionsObj.currentVersion}
+                    >
+                      Delete
+                    </button>
 
-              <button
-                class="button button-outlined {buttonColor}"
-                on:click={() => dispatch('editVersion', { id: versionsObj.id, version: version })}
-              >
-                Edit
-              </button>
-            </div>
-          </div>
-        {/each}
+                    <button
+                      class="button button-outlined {buttonColor}"
+                      on:click={() =>
+                        dispatch('editVersion', { id: versionsObj.id, version: version })}
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </th>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
       </div>
     </form>
   </div>
