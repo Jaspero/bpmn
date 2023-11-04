@@ -45,6 +45,7 @@
   let elementRegistry: any;
   let modeling: any;
   let moddle: any;
+  let overlays: any;
 
   let instance: BPMN;
   let instanceBackup: BPMN;
@@ -156,6 +157,19 @@
         modeling.updateProperties(el, {
           implementation: '${environment.services.defaultServiceRun()}'
         });
+      }
+
+      overlays.clear({element: el});
+
+      if (service.image) {
+        overlays.add(el, {
+          position: {
+            top: 4,
+            right: 24
+          },
+          html: `<div class="service-svg-wrapper">${service.image}</div>`
+        });
+
       }
 
       newId =
@@ -374,6 +388,7 @@
     elementRegistry = modeler.get('elementRegistry');
     modeling = modeler.get('modeling');
     moddle = modeler.get('moddle');
+    overlays = modeler.get('overlays');
 
     const eventBus = modeler.get('eventBus');
 
@@ -1383,5 +1398,18 @@
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+
+  /**
+   * Overlays
+   */
+  :global(.service-svg-wrapper) {
+    width: 20px;
+    height: 20px;
+  }
+
+  :global(.service-svg-wrapper svg) {
+    width: 100%;
+    height: auto;
   }
 </style>

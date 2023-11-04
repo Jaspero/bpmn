@@ -4,4 +4,5 @@ export interface BPMNModelService {
   url: string;
   configFields?: any[];
   defaultConfig?: any;
+  image?: string;
 }
