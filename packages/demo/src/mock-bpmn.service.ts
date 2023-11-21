@@ -96,6 +96,7 @@ export class MockBPMNService implements BPMNService {
     return;
   }
   async delete(id: string): Promise<void> {
+    await new Promise(resolve => setTimeout(resolve, 2000));
     return;
   }
   async getVersions(id: string): Promise<number[]> {
@@ -112,6 +113,7 @@ export class MockBPMNService implements BPMNService {
     return;
   }
   async deleteVersion(id: string, version: number): Promise<void> {
+    await new Promise(resolve => setTimeout(resolve, 2000));
     return;
   }
 

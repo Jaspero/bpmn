@@ -87,9 +87,11 @@
       },
       async (e) => {
         if (e.confirmed) {
+          document.body.style.cursor = 'wait'
           await bpmnService.delete(item.id);
           items.splice(index, 1);
           items = [...items];
+          document.body.style.cursor = 'default'
         }
       }
     );
