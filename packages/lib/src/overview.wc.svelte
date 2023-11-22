@@ -29,6 +29,9 @@
   let hasMore = false;
   let ref: any;
 
+  let delConfirm = false;
+  let delLoading = false;
+
   let loadingVersions = false;
   let versionsDialog = false;
   let versionDelLoading = false;
@@ -76,7 +79,7 @@
   }
 
   function del(index: number, item: BPMN) {
-    popup = null;
+    delConfirm = true;
     renderConfirm(
       {
         title: 'Delete model',
@@ -87,11 +90,13 @@
       },
       async (e) => {
         if (e.confirmed) {
-          document.body.style.cursor = 'wait'
+          delLoading = true;
+          delConfirm = false;
           await bpmnService.delete(item.id);
+          delLoading = false;
+          popup = null;
           items.splice(index, 1);
           items = [...items];
-          document.body.style.cursor = 'default'
         }
       }
     );
@@ -241,7 +246,11 @@
                     style={menuStyle}
                     transition:fly={{ y: -15, duration: 250 }}
                     use:clickOutside
-                    on:click_outside={() => (popup = null)}
+                    on:click_outside={() => {
+                      if (!delConfirm && !delLoading) {
+                        popup = null;
+                      }
+                    }}
                   >
                     <button class="button-filled {buttonColor}" on:click={() => newVersion(item.id)}
                       >New version</button
@@ -257,8 +266,10 @@
                       class:loading={loadingVersions}
                       on:click={() => viewVersions(item.id, item.version)}>Versions</button
                     >
-                    <button class="button-outlined {buttonColor}" on:click={() => del(index, item)}
-                      >Delete</button
+                    <button
+                      class="button-outlined {buttonColor}"
+                      on:click={() => del(index, item)}
+                      class:loading={delLoading}>Delete</button
                     >
                   </div>
                 </div>
@@ -377,7 +388,9 @@
     <form
       class="dialog"
       use:clickOutside={true}
-      on:click_outside={() => {if(!versionDelConfirm) versionsDialog = false}}
+      on:click_outside={() => {
+        if (!versionDelConfirm) versionsDialog = false;
+      }}
       on:submit|preventDefault={create}
     >
       <div class="dialog-header">
@@ -607,7 +620,7 @@
   }
 
   .overlay {
-    z-index: 100;
+    z-index: 9;
     position: fixed;
     top: 0;
     left: 0;
