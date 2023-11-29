@@ -7,7 +7,7 @@ import type { BPMNVersion } from './bpmn-version.interface';
 import type { BPMN } from './bpmn.interface';
 
 export interface BPMNService {
-  list(lastToken?: any): Promise<BPMN[]>;
+  list(lastToken: any, filters: {tags: string[]}): Promise<BPMN[]>;
 
   get(id: string): Promise<BPMN>;
 

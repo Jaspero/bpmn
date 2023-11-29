@@ -14,6 +14,7 @@
   import '@jaspero/web-components/dist/confirm.wc';
   import { renderConfirm } from '@jaspero/web-components/dist/render-confirm';
   import type {BPMNTag} from './types/bpmn-tag.interface';
+  import FormModule from './FormModule.svelte';
 
   export let bpmnService: BPMNService;
   export let buttonColor: 'primary' | 'secondary' = 'primary';
@@ -25,7 +26,6 @@
 
   let items: BPMN[] = [];
   let loading: boolean;
-  let filters = false;
   let popup: number | null = null;
   let hasMore = false;
   let ref: any;
@@ -43,6 +43,15 @@
   let newLoading = false;
   let form: { name: string; description: string };
   let tagsMap: {[id: string]: BPMNTag} = {};
+  let tags: BPMNTag[];
+
+  let filters = false;
+  let filterFields: any[];
+  let filterValue: {
+    tags: string[]
+  } = {
+    tags: []
+  };
 
   async function list() {
     if (loading) {
@@ -51,7 +60,7 @@
 
     loading = true;
 
-    const res = await bpmnService.list(ref);
+    const res = await bpmnService.list(ref, filterValue);
 
     hasMore = !!res.length;
 
@@ -61,8 +70,7 @@
   }
 
   async function loadTags() {
-    const tags = await bpmnService.getTags();
-
+    tags = await bpmnService.getTags();
     tagsMap = tags.reduce((acc, tag) => {
       acc[tag.id] = tag;
       return acc;
@@ -172,6 +180,18 @@
     list().catch();
   }
 
+  function clearFilters() {
+
+    filterValue = {
+      tags: []
+    };
+
+    ref = null;
+    items = [];
+    filters = false;
+    list().catch();
+  }
+
   async function viewVersions(id, version) {
     loadingVersions = true;
 
@@ -197,6 +217,20 @@
       list(),
       loadTags()
     ]);
+
+    filterFields = [
+      {
+        component: 'jp-multiselect',
+        field: '/tags',
+        options: {
+          label: 'Tags',
+          options: tags.map(tag => ({
+            label: tag.name,
+            value: tag.id
+          }))
+        }
+      }
+    ];
   });
 </script>
 
@@ -322,41 +356,11 @@
       </div>
 
       <div class="dialog-grid">
-        <div class="dialog-grid-item half">
-          <label for="startDate">Start date</label>
-          <input type="date" id="startDate" />
-        </div>
-
-        <div class="dialog-grid-item half">
-          <label for="startDate">End date</label>
-          <input type="date" id="endDate" />
-        </div>
-
-        <div class="dialog-grid-item">
-          <label for="email">Email</label>
-          <input type="email" id="email" />
-        </div>
-
-        <div class="dialog-grid-item">
-          <label for="role">Role</label>
-          <select name="role" id="role">
-            <option value="" selected disabled>Select a role</option>
-            <option value="admin">Admin</option>
-            <option value="user">User</option>
-          </select>
-        </div>
-
-        <div class="dialog-grid-item">
-          <label for="active">Active</label>
-          <select name="active" id="active">
-            <option value="" selected disabled>Select active/inactive</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
+        <FormModule items={filterFields} bind:value={filterValue} />
       </div>
 
       <div class="dialog-actions">
+        <button class="button-outlined {buttonColor}" type="button" on:click={clearFilters}>Clear</button>
         <button class="button-filled {buttonColor}" type="submit">Apply</button>
       </div>
     </form>
@@ -954,7 +958,7 @@
     -webkit-flex-wrap: wrap;
     -ms-flex-wrap: wrap;
     flex-wrap: wrap;
-    padding: 0.5rem 0;
+    padding: 1rem;
   }
 
   .dialog-grid-item {
