@@ -6,9 +6,10 @@
   import '@jaspero/web-components/dist/quill.wc';
   import '@jaspero/web-components/dist/textarea.wc';
   import '@jaspero/web-components/dist/checkbox.wc';
-  import '@jaspero/web-components/dist/image-upload.wc';
+  import '@jaspero/web-components/dist/file-upload.wc';
   import '@jaspero/web-components/dist/code-editor.wc';
   import '@jaspero/web-components/dist/json-editor.wc';
+  import '@jaspero/web-components/dist/toggle.wc';
 
   import { ModularSchema, ModularView } from '@jaspero/modular';
   import { createEventDispatcher } from 'svelte';

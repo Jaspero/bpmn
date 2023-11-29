@@ -5,6 +5,7 @@ import type { BPMNTestData } from '../../../dist/lib/types/bpmn-test-data.interf
 import type { BPMNTrigger } from '../../../dist/lib/types/bpmn-trigger.interface';
 import type { BPMNTestRunOutput } from '../../../dist/lib/types/bpmn-test-run-output.interface';
 import {random} from '@jaspero/utils';
+import type {BPMNTag} from '../../../dist/lib/types/bpmn-tag.interface';
 
 const mockItems = [
   {
@@ -12,14 +13,16 @@ const mockItems = [
     name: 'foo',
     version: 1,
     createdOn: Date.now(),
-    lastUpdatedOn: Date.now()
+    lastUpdatedOn: Date.now(),
+    tags: ['1', '2']
   },
   {
     id: Date.now().toString(),
     name: 'bar',
     version: 1,
     createdOn: Date.now(),
-    lastUpdatedOn: Date.now()
+    lastUpdatedOn: Date.now(),
+    tags: ['2']
   }
 ];
 
@@ -241,5 +244,22 @@ export class MockBPMNService implements BPMNService {
         name: 'Stuffy Stuffers'
       }
     };
+  }
+  
+  async getTags(): Promise<BPMNTag[]> {
+    return [
+      {
+        id: '1',
+        name: 'Tag 1',
+        color: '#deff9c',
+        fontColor: '#000'
+      },
+      {
+        id: '2',
+        name: 'Warning',
+        color: '#69070e',
+        fontColor: '#fff'
+      }
+    ]
   }
 }

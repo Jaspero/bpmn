@@ -21,6 +21,7 @@
   import { clickOutside } from './click-outside';
   import type { BPMNTestData } from './types/bpmn-test-data.interface';
   import { fly } from 'svelte/transition';
+  import type { BPMNTag } from './types/bpmn-tag.interface';
 
   export let bpmnService: BPMNService;
   export let id: string;
@@ -53,11 +54,19 @@
   let versionInstanceBackup: BPMNVersion;
   let triggers: BPMNTrigger[];
   let triggerVersions: { [key: string]: number[] } = {};
+  let tags: BPMNTag[];
 
   let selectedTrigger: string;
   let selectedTriggerVersion: string;
 
   let saveLoading = false;
+  let generalFields: any;
+  let generalValue: {
+    name: string;
+    description: string;
+    active: boolean;
+    tags: string[];
+  };
 
   let testDataFields = [
     {
@@ -351,16 +360,24 @@
     return xml.replace(/isExecutable="false"/g, 'isExecutable="true"');
   }
 
+  function handgleGeneralChange() {
+    instance.name = generalValue.name;
+    instance.description = generalValue.description;
+    instance.tags = generalValue.tags;
+    versionInstance.active = generalValue.active;
+  }
+
   onMount(async () => {
     state.service = bpmnService;
 
     await loadBpmn();
 
-    [instance, versionInstance, triggers, services] = await Promise.all([
+    [instance, versionInstance, triggers, services, tags] = await Promise.all([
       bpmnService.get(id),
       bpmnService.getVersion(id, version),
       bpmnService.getTriggers(),
-      bpmnService.getServices()
+      bpmnService.getServices(),
+      bpmnService.getTags()
     ]);
 
     triggers.forEach((el) => (triggerVersions[el.id] = el.versions));
@@ -449,6 +466,46 @@
       selection = null;
     });
 
+    generalFields = [
+      {
+        component: 'jp-input',
+        field: '/name',
+        options: {
+          label: 'Name'
+        }
+      },
+      {
+        component: 'jp-textarea',
+        field: '/description',
+        options: {
+          label: 'Description'
+        }
+      },
+      {
+        component: 'jp-multiselect',
+        field: '/tags',
+        options: {
+          label: 'Tags',
+          options: tags.map(tag => ({
+            label: tag.name,
+            value: tag.id
+          }))
+        }
+      },
+      {
+        component: 'jp-toggle',
+        field: '/active',
+        options: {
+          label: 'Active'
+        }
+      }
+    ];
+    generalValue = {
+      name: instance.name,
+      description: instance.description,
+      active: versionInstance.active
+    };
+
     // TODO: Handle warnings and errors
     const { warnings } = await modeler.importXML(versionInstance.xml);
 
@@ -524,18 +581,14 @@
           <summary>General</summary>
           <div class="details-grid">
             <div class="field-container">
-              <label for="name">Name</label>
-              <input id="name" bind:value={instance.name} required />
+              {#if generalFields}
+                <FormModule
+                  items={generalFields}
+                  bind:value={generalValue}
+                  on:value={handgleGeneralChange}
+                />
+              {/if}
             </div>
-
-            <div class="field-container">
-              <label for="description">Description</label>
-              <textarea id="description" rows="4" bind:value={instance.description} />
-            </div>
-
-            <label>
-              <input type="checkbox" bind:checked={versionInstance.active} /> Active
-            </label>
           </div>
         </details>
 

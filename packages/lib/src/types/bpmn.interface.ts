@@ -6,4 +6,5 @@ export interface BPMN {
   lastUpdatedOn: number;
   latestTrigger?: string;
   description?: string;
+  tags?: string[];
 }

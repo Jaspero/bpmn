@@ -13,6 +13,7 @@
   import type { BPMNService } from './types/bpmn.service';
   import '@jaspero/web-components/dist/confirm.wc';
   import { renderConfirm } from '@jaspero/web-components/dist/render-confirm';
+  import type {BPMNTag} from './types/bpmn-tag.interface';
 
   export let bpmnService: BPMNService;
   export let buttonColor: 'primary' | 'secondary' = 'primary';
@@ -41,6 +42,7 @@
   let newDialog = false;
   let newLoading = false;
   let form: { name: string; description: string };
+  let tagsMap: {[id: string]: BPMNTag} = {};
 
   async function list() {
     if (loading) {
@@ -56,6 +58,15 @@
     ref = res[res.length - 1];
     items = [...items, ...res];
     loading = false;
+  }
+
+  async function loadTags() {
+    const tags = await bpmnService.getTags();
+
+    tagsMap = tags.reduce((acc, tag) => {
+      acc[tag.id] = tag;
+      return acc;
+    }, {});
   }
 
   function togglePopup(index: number) {
@@ -182,7 +193,10 @@
   }
 
   onMount(async () => {
-    await list();
+    await Promise.all([
+      list(),
+      loadTags()
+    ]);
   });
 </script>
 
@@ -216,6 +230,9 @@
               {:else}
                 -
               {/if}
+              {#each item.tags as tag}
+                <span class="tag" style:background-color={tagsMap[tag].color} style:color={tagsMap[tag].fontColor || '#000'}>{tagsMap[tag].name}</span>
+              {/each}
             </td>
             <td>
               {#if item.description}
@@ -654,6 +671,14 @@
     -webkit-border-radius: 0.25rem;
     -moz-border-radius: 0.25rem;
     border-radius: 0.25rem;
+  }
+
+  /* Tags */
+  
+  .tag {
+    padding: 0.3rem 1rem;
+    border-radius: 1rem;
+    margin-left: .3rem;
   }
 
   /* Buttons */

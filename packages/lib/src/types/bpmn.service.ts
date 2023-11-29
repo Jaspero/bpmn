@@ -1,4 +1,5 @@
 import type { BPMNModelService } from './bpmn-model-service.interface';
+import type { BPMNTag } from './bpmn-tag.interface';
 import type { BPMNTestData } from './bpmn-test-data.interface';
 import type { BPMNTestRunOutput } from './bpmn-test-run-output.interface';
 import type { BPMNTrigger } from './bpmn-trigger.interface';
@@ -63,4 +64,6 @@ export interface BPMNService {
   deleteTestData(bpmnId: string, dataId: string): Promise<void>;
 
   testRun(model: string, data: any): Promise<BPMNTestRunOutput>;
+
+  getTags(): Promise<BPMNTag[]>;
 }
