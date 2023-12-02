@@ -503,7 +503,8 @@
     generalValue = {
       name: instance.name,
       description: instance.description,
-      active: versionInstance.active
+      active: versionInstance.active,
+      tags: instance.tags
     };
 
     // TODO: Handle warnings and errors

@@ -535,8 +535,7 @@
   }
 
   input,
-  textarea,
-  select {
+  textarea {
     border: 2px solid var(--border-primary);
     padding: 0 0.75rem;
     -webkit-border-radius: 0.25rem;
