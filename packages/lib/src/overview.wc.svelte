@@ -263,7 +263,7 @@
               {:else}
                 -
               {/if}
-              {#each item.tags as tag}
+              {#each (item.tags || []) as tag}
                 <span class="tag" style:background-color={tagsMap[tag].color} style:color={tagsMap[tag].fontColor || '#000'}>{tagsMap[tag].name}</span>
               {/each}
             </td>

@@ -572,7 +572,7 @@
       name: instance.name,
       description: instance.description,
       active: versionInstance.active,
-      tags: instance.tags
+      tags: instance.tags || []
     };
 
     // TODO: Handle warnings and errors
