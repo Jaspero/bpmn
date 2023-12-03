@@ -572,14 +572,9 @@
     opacity: 0.75;
   }
 
-  th:first-child,
-  td:first-child {
+  th,
+  td {
     text-align: left;
-  }
-
-  th:not(:first-child):not(:last-child),
-  td:not(:first-child):not(:last-child) {
-    text-align: center;
   }
 
   th:last-child,

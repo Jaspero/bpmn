@@ -14,6 +14,7 @@ const mockItems = [
     version: 1,
     createdOn: Date.now(),
     lastUpdatedOn: Date.now(),
+    description: `This is an item`,
     tags: ['1', '2']
   },
   {
@@ -22,6 +23,7 @@ const mockItems = [
     version: 1,
     createdOn: Date.now(),
     lastUpdatedOn: Date.now(),
+    description: `This is an item`,
     tags: ['2']
   }
 ];
