@@ -238,7 +238,6 @@
   <div class="card">
     <div class="card-header">
       <div class="card-header-main">
-        <input type="search" placeholder="Search" class="search" />
         <button class="button-outlined {buttonColor}" on:click={() => (filters = true)}
           >Filters</button
         >
@@ -547,10 +546,6 @@
     -ms-flex: 1 1 0px;
     flex: 1 1 0;
     min-height: 2.5rem;
-  }
-
-  .card-header-main .search:not(:focus):hover {
-    border-color: var(--secondary-color);
   }
 
   /* Table */
