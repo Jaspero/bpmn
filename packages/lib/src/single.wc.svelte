@@ -22,6 +22,8 @@
   import type { BPMNTestData } from './types/bpmn-test-data.interface';
   import { fly } from 'svelte/transition';
   import type { BPMNTag } from './types/bpmn-tag.interface';
+  import type { SelectionType } from './types/selection-type.type';
+  import { getTimerEventDefinition } from '../utils';
 
   export let bpmnService: BPMNService;
   export let id: string;
@@ -35,7 +37,7 @@
 
   let selection: {
     id: string;
-    type: 'service' | 'condition';
+    type: SelectionType;
     value?: { config?: any } & any;
     configFields?: any[];
   } | null = null;
@@ -168,7 +170,7 @@
         });
       }
 
-      overlays.clear({element: el});
+      overlays.clear({ element: el });
 
       if (service.image) {
         overlays.add(el, {
@@ -178,7 +180,6 @@
           },
           html: `<div class="service-svg-wrapper">${service.image}</div>`
         });
-
       }
 
       newId =
@@ -236,11 +237,32 @@
 
         break;
       }
+      case 'timer': {
+        const expression = moddle.create('bpmn:FormalExpression', {
+          body: selection.value.config.value
+        });
+        const timerEventDefinition = getTimerEventDefinition(el);
+        const typeMap = {
+          date: 'timeDate',
+          cycle: 'timeCycle'
+        };
+
+        expression.$parent = timerEventDefinition;
+
+        for (const key in typeMap) {
+          timerEventDefinition.set(
+            typeMap[key],
+            key === selection.value.config.type ? expression : undefined
+          );
+        }
+
+        break;
+      }
     }
   }
 
   function selectElement(
-    type: 'service' | 'condition',
+    type: SelectionType,
     id: string,
     config?: { value?: any; configFields?: any[] }
   ) {
@@ -367,6 +389,109 @@
     versionInstance.active = generalValue.active;
   }
 
+  function eventHandler(e) {
+    if (e.gfx.classList.contains('selected')) {
+      const { type, id, source } = e.element;
+
+      switch (type) {
+        case 'bpmn:StartEvent': {
+          const timer = getTimerEventDefinition(e.element);
+
+          if (timer) {
+            const config: {
+              type?: 'date' | 'cycle';
+              value?: string;
+            } = {};
+
+            if (timer.get('timeDate')) {
+              config.type = 'date';
+              config.value = timer.get('timeDate').body || '';
+            } else if (timer.get('timeCycle')) {
+              config.type = 'cycle';
+              config.value = timer.get('timeCycle').body || '';
+            }
+
+            selectElement('timer', id, {
+              configFields: [
+                {
+                  component: 'jp-select',
+                  field: '/type',
+                  options: {
+                    label: 'Type',
+                    options: [
+                      { label: 'Date', value: 'date' },
+                      { label: 'Cycle', value: 'cycle' }
+                    ]
+                  }
+                },
+                {
+                  component: 'jp-input',
+                  field: '/value',
+                  options: {
+                    label: 'Value'
+                  }
+                }
+              ],
+              value: { config }
+            });
+
+            return;
+          }
+
+          return;
+        }
+        case 'bpmn:Task': {
+          selectElement('service', id, { value: { service: null } });
+          return;
+        }
+        case 'bpmn:ServiceTask': {
+          const { service, config } = JSON.parse(base32.decode(id.split('jpservice')[1]));
+          const serviceType = services.find((it) => it.id === service);
+          selectElement('service', id, {
+            configFields: serviceType.configFields,
+            value: { service, config }
+          });
+          return;
+        }
+        case 'bpmn:SequenceFlow': {
+          if (source.type !== 'bpmn:ExclusiveGateway') {
+            break;
+          }
+
+          selectElement('condition', id, {
+            configFields: [
+              {
+                component: 'jp-code-editor',
+                field: '/condition',
+                options: {
+                  label: 'Condition',
+                  options: {
+                    lineNumbers: true,
+                    mode: 'javascript',
+                    styleActiveLine: true,
+                    matchBrackets: true
+                  }
+                }
+              }
+            ],
+            value: {
+              config: {
+                condition: e.element?.businessObject?.conditionExpression?.body.replace(
+                  /<!\[CDATA\[next\(null, (.*)\)\;]]>/,
+                  '$1'
+                )
+              }
+            }
+          });
+
+          return;
+        }
+      }
+    }
+
+    selection = null;
+  }
+
   onMount(async () => {
     state.service = bpmnService;
 
@@ -396,9 +521,7 @@
       keyboard: {
         bindTo: window
       },
-      additionalModules: [
-        customRendererModule
-      ]
+      additionalModules: [customRendererModule]
     });
 
     elementFactory = modeler.get('elementFactory');
@@ -409,62 +532,7 @@
 
     const eventBus = modeler.get('eventBus');
 
-    eventBus.on('element.click', (e) => {
-      if (e.gfx.classList.contains('selected')) {
-        const { type, id, source } = e.element;
-
-        switch (type) {
-          case 'bpmn:Task': {
-            selectElement('service', id, { value: { service: null } });
-            return;
-          }
-          case 'bpmn:ServiceTask': {
-            const { service, config } = JSON.parse(base32.decode(id.split('jpservice')[1]));
-            const serviceType = services.find((it) => it.id === service);
-            selectElement('service', id, {
-              configFields: serviceType.configFields,
-              value: { service, config }
-            });
-            return;
-          }
-          case 'bpmn:SequenceFlow': {
-            if (source.type !== 'bpmn:ExclusiveGateway') {
-              break;
-            }
-
-            selectElement('condition', id, {
-              configFields: [
-                {
-                  component: 'jp-code-editor',
-                  field: '/condition',
-                  options: {
-                    label: 'Condition',
-                    options: {
-                      lineNumbers: true,
-                      mode: 'javascript',
-                      styleActiveLine: true,
-                      matchBrackets: true
-                    }
-                  }
-                }
-              ],
-              value: {
-                config: {
-                  condition: e.element?.businessObject?.conditionExpression?.body.replace(
-                    /<!\[CDATA\[next\(null, (.*)\)\;]]>/,
-                    '$1'
-                  )
-                }
-              }
-            });
-
-            return;
-          }
-        }
-      }
-
-      selection = null;
-    });
+    eventBus.on('element.click', (e) => eventHandler(e));
 
     generalFields = [
       {
@@ -486,7 +554,7 @@
         field: '/tags',
         options: {
           label: 'Tags',
-          options: tags.map(tag => ({
+          options: tags.map((tag) => ({
             label: tag.name,
             value: tag.id
           }))
@@ -549,8 +617,12 @@
             use:clickOutside
             on:click_outside={() => (popup = null)}
           >
-            <button class="button button-filled {buttonColor}" on:click={exportXml}>Export XML</button>
-            <button class="button button-outlined {buttonColor}" on:click={importXml}>Import XML</button>
+            <button class="button button-filled {buttonColor}" on:click={exportXml}
+              >Export XML</button
+            >
+            <button class="button button-outlined {buttonColor}" on:click={importXml}
+              >Import XML</button
+            >
           </div>
         </div>
       {/if}
@@ -719,7 +791,11 @@
                         class="button button-filled icon {buttonColor}"
                         on:click={() => selectTestData(test)}
                       >
-                        <span class="material-symbols-outlined"> {selectedTestData.id === test.id ? 'select_check_box' : 'check_box_outline_blank'} </span>
+                        <span class="material-symbols-outlined">
+                          {selectedTestData.id === test.id
+                            ? 'select_check_box'
+                            : 'check_box_outline_blank'}
+                        </span>
                       </button>
                     </div>
                   </td>
