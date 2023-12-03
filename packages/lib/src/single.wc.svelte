@@ -29,6 +29,7 @@
   export let id: string;
   export let version: number;
   export let buttonColor: 'primary' | 'secondary' = 'primary';
+  export let hasTriggers = false;
 
   const dispatch = createEventDispatcher();
 
@@ -110,7 +111,7 @@
   let popupMenuStyle: string;
   let fileEl: HTMLInputElement;
 
-  $: if (versionInstance) {
+  $: if (versionInstance && hasTriggers) {
     versionInstance.trigger = `${selectedTrigger}-v${selectedTriggerVersion}`;
   }
 
@@ -500,7 +501,7 @@
     [instance, versionInstance, triggers, services, tags] = await Promise.all([
       bpmnService.get(id),
       bpmnService.getVersion(id, version),
-      bpmnService.getTriggers(),
+      hasTriggers ? bpmnService.getTriggers() : Promise.resolve([]),
       bpmnService.getServices(),
       bpmnService.getTags()
     ]);
@@ -665,37 +666,39 @@
           </div>
         </details>
 
-        <details>
-          <summary>Trigger</summary>
-          <div class="details-grid">
-            <div class="field-container">
-              <label for="trigger">Trigger</label>
-              <select id="trigger" bind:value={selectedTrigger}>
-                <option value="">Select Trigger</option>
-                {#each triggers as trigger}
-                  <option value={trigger.id}>{trigger.name}</option>
-                {/each}
-              </select>
-              {#if selectedTrigger}
-                <select id="trigger-version" bind:value={selectedTriggerVersion}>
-                  <option value="">Select Version</option>
-                  {#each triggerVersions[selectedTrigger] as version}
-                    <option value={version}>{version}</option>
+        {#if hasTriggers}
+          <details>
+            <summary>Trigger</summary>
+            <div class="details-grid">
+              <div class="field-container">
+                <label for="trigger">Trigger</label>
+                <select id="trigger" bind:value={selectedTrigger}>
+                  <option value="">Select Trigger</option>
+                  {#each triggers as trigger}
+                    <option value={trigger.id}>{trigger.name}</option>
                   {/each}
                 </select>
-              {/if}
-            </div>
+                {#if selectedTrigger}
+                  <select id="trigger-version" bind:value={selectedTriggerVersion}>
+                    <option value="">Select Version</option>
+                    {#each triggerVersions[selectedTrigger] as version}
+                      <option value={version}>{version}</option>
+                    {/each}
+                  </select>
+                {/if}
+              </div>
 
-            <div class="field-container">
-              <label for="triggerCondition">Trigger Condition</label>
-              <textarea
-                id="triggerCondition"
-                rows="4"
-                bind:value={versionInstance.triggerCondition}
-              />
+              <div class="field-container">
+                <label for="triggerCondition">Trigger Condition</label>
+                <textarea
+                  id="triggerCondition"
+                  rows="4"
+                  bind:value={versionInstance.triggerCondition}
+                />
+              </div>
             </div>
-          </div>
-        </details>
+          </details>
+        {/if}
 
         <details>
           <summary>Version</summary>

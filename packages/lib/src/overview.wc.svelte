@@ -19,6 +19,7 @@
   export let bpmnService: BPMNService;
   export let buttonColor: 'primary' | 'secondary' = 'primary';
   export let subscriptionLink: (row: BPMN) => string;
+  export let hasTriggers = false;
 
   const dispatch = createEventDispatcher();
 
@@ -427,7 +428,9 @@
             <tr>
               <th>Version</th>
               <th>Created on</th>
-              <th>Trigger</th>
+              {#if hasTriggers}
+                <th>Trigger</th>
+              {/if}
               <th>Actions</th>
             </tr>
           </thead>
@@ -442,11 +445,13 @@
                     {new Date(versionsObj.versionsData[version].createdOn).toDateString()}
                   {/if}
                 </th>
-                <th>
-                  {#if versionsObj.versionsData[version].trigger}
-                    {versionsObj.versionsData[version].trigger}
-                  {/if}
-                </th>
+                {#if hasTriggers}
+                  <th>
+                    {#if versionsObj.versionsData[version].trigger}
+                      {versionsObj.versionsData[version].trigger}
+                    {/if}
+                  </th>
+                {/if}
                 <th>
                   <div class="flex gap-2">
                     <button
