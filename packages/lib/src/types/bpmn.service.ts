@@ -18,6 +18,7 @@ export interface BPMNService {
     update: {
       name?: string;
       description?: string;
+      tags?: string[];
     }
   ): Promise<void>;
 

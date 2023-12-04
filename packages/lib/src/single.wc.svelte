@@ -124,7 +124,8 @@
     if (changes) {
       await bpmnService.update(id, {
         name: instance.name,
-        description: instance.description
+        description: instance.description,
+        tags: instance.tags || []
       });
     }
 
