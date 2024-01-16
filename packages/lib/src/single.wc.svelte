@@ -24,6 +24,8 @@
   import type { BPMNTag } from './types/bpmn-tag.interface';
   import type { SelectionType } from './types/selection-type.type';
   import { getTimerEventDefinition } from '../utils';
+  import '@jaspero/web-components/dist/alert.wc';
+  import { renderAlert } from '@jaspero/web-components/dist/render-alert';
 
   export let bpmnService: BPMNService;
   export let id: string;
@@ -369,14 +371,27 @@
     const file = fileEl.files[0];
 
     if (!file) {
+      renderAlert({
+        state: 'error',
+        message: 'File not provided',
+        duration: 3000,
+        host: document.body
+      });
       return;
     }
 
     const reader = new FileReader();
     reader.readAsText(file, 'UTF-8');
-    reader.onload = (evt) => {
-      modeler.importXML(evt.target.result);
+    reader.onload = async (evt) => {
+      try {
+        await modeler.importXML(evt.target.result);
+      } catch (err) {
+        console.log(err);
+        renderAlert({ state: 'error', message: 'Problem importing XML', duration: 3000 });
+      }
     };
+
+    fileEl.value = '';
   }
 
   async function getXml() {
@@ -825,7 +840,7 @@
   </div>
 {/if}
 
-<input type="file" hidden bind:this={fileEl} on:change={xmlSelected} />
+<input type="file" hidden bind:this={fileEl} accept=".xml" on:change={xmlSelected} />
 
 <style>
   .layout {
